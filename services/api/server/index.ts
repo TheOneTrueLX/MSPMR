@@ -1,8 +1,10 @@
 import './common/env';
-import Server from './common/server';
+import ApiServer from './common/server';
 import routes from './routes';
 
 const port = parseInt(process.env.PORT);
-export default new Server()
+
+export default new ApiServer()
   .router(routes)
   .listen(port);
+
