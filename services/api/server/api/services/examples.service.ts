@@ -54,7 +54,7 @@ export class ExamplesService {
     return doc;
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string): Promise<any> {
     L.info(`delete example with id ${id}`);
 
     return await Example

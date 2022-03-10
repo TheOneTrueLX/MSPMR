@@ -1,12 +1,12 @@
 swagger: "2.0"
 info:
   version: 1.0.0
-  title: myapp
-  description: My cool Mongoose, Typescript, Express app
+  title: MSPMR
+  description: MSPMR Media Share API
 basePath: /api/v1
 tags:
-  - name: Examples
-    description: Simple example endpoints
+  - name: Videos
+    description: Simple video endpoints
   - name: Specification
     description: The swagger API specification
 
@@ -17,92 +17,92 @@ produces:
 
 
 definitions:
-  ExampleBody:
+  VideoBody:
     type: object
-    title: example
+    title: video
     required:
       - name
     properties:
       name:
         type: string
-        example: no_stress
+        video: no_stress
 
 paths:
-  /examples:
+  /videos:
     get:
       tags:
-        - Examples
-      description: Fetch all examples
+        - Videos
+      description: Fetch all videos
       responses:
         200:
-          description: Returns all examples
+          description: Returns all videos
     post:
       tags:
-        - Examples
-      description: Create a new example
+        - Videos
+      description: Create a new video
       parameters:
-        - name: example
+        - name: video
           in: body
-          description: an example
+          description: an video
           required: true
           schema: 
-            $ref: "#/definitions/ExampleBody"
+            $ref: "#/definitions/VideoBody"
       responses:
         200:
-          description: Returns newly created example
+          description: Returns newly created video
 
-  /examples/{id}:
+  /videos/{id}:
     get:
       tags:
-        - Examples
-      description: Get an example
+        - Videos
+      description: Get an video
       parameters:
         - name: id
           in: path
           required: true
-          description: The id of the example to retrieve
+          description: The id of the video to retrieve
           type: string
       responses:
         200:
-          description: Return the example with the specified id
+          description: Return the video with the specified id
         404:
-          description: Example not found
+          description: Video not found
     patch:
       tags:
-        - Examples
-      description: Update an example
+        - Videos
+      description: Update an video
       parameters:
         - name: id
           in: path
           required: true
-          description: The id of the example to update
+          description: The id of the video to update
           type: string
-        - name: example
+        - name: video
           in: body
-          description: example attribtues to update
+          description: video attribtues to update
           required: true
           schema: 
-            $ref: "#/definitions/ExampleBody"
+            $ref: "#/definitions/VideoBody"
       responses:
         200:
-          description: Return updated examples
+          description: Return updated videos
         404:
-          description: Example not found
+          description: Video not found
     delete:
       tags:
-        - Examples
-      description: Delete an example
+        - Videos
+      description: Delete an video
       parameters:
         - name: id
           in: path
           required: true
-          description: The id of the example to delete
+          description: The id of the video to delete
           type: string
       responses:
         204:
-          description: Delete the example with the specified id
+          description: Delete the video with the specified id
         404:
-          description: Example not found
+          description: Video not found
 
   /spec:
     get:
