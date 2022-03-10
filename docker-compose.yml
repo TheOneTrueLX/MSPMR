@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+
+  mongodb:
+    image: mongo:latest
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - mspmr_net
+  
+  redis:
+    image: redis:alpine
+    restart: always
+    ports:
+      - 6379:6379
+    networks:
+      - mspmr_net
+
+  node-red:
+    image: nodered/node-red:latest
+    environment:
+      - TZ=America/Los_Angeles
+    ports:
+      - 1880:1880
+    networks:
+      - mspmr_net
+    volumes:
+      - nodered_data:/data
+
+volumes:
+  mongodb_data:
+  nodered_data:
+
+networks:
+  mspmr_net:
