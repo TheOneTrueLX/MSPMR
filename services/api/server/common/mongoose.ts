@@ -8,7 +8,11 @@ export default class Mongoose {
 
   init() {
     //Set up default mongoose connection
-    mongoose.connect(this.connectionURI);
+    mongoose.connect(this.connectionURI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      }
+    );
 
     // Get Mongoose to use the global promise library
     mongoose.Promise = global.Promise;
