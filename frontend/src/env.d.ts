@@ -6,3 +6,11 @@ declare module '*.vue' {
   const component: DefineComponent<{}, {}, any>
   export default component
 }
+
+interface ImportMetaEnv extends Readonly<Record<string, string>> {
+  readonly SOCKETIO_URL: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}
