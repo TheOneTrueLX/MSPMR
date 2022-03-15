@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      dockerfile: ./services/api/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: 'production'
+    ports:
+      - 5000:5000
+    networks:
+      - mspmr_net
+    depends_on:
+      - mongodb
+      - redis
+      - rabbitmq
+
+  frontend:
+    build:
+      dockerfile: ./frontend/Dockerfile
+    restart: unless-stopped
+    environment:
+      - NODE_ENV: 'production'
+    ports:
+      - 3000:3000
+    networks:
+      - mspmr_net
+    depends_on:
+      - api

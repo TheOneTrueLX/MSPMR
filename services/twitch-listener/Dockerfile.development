@@ -1,0 +1,12 @@
+FROM node:lts-alpine
+
+RUN mkdir -p /usr/src/app/services/twitch-listener
+WORKDIR /usr/src/app
+
+COPY ./package.json /usr/src/app
+COPY ./yarn.lock /usr/src/app
+COPY ./services/api/.env /usr/src/app
+
+RUN yarn install --pure-lockfile
+EXPOSE 5001
+CMD [ "yarn", "twitch-listener:dev" ]

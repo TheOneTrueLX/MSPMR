@@ -20,20 +20,21 @@ services:
     networks:
       - mspmr_net
 
-  node-red:
-    image: nodered/node-red:latest
-    environment:
-      - TZ=America/Los_Angeles
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    restart: always
     ports:
-      - 1880:1880
+      - 5672:5672
+      - 15672:15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=changeme
     networks:
       - mspmr_net
-    volumes:
-      - nodered_data:/data
 
 volumes:
   mongodb_data:
-  nodered_data:
 
 networks:
   mspmr_net:
+    driver: bridge

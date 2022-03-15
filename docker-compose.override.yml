@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./
+      dockerfile: ./services/api/Dockerfile.development
+    restart: unless-stopped
+    volumes:
+      - ./services/api:/usr/src/app/services/api
+    ports:
+      - 5000:5000
+    networks:
+      - mspmr_net
+    depends_on:
+      - mongodb
+      - redis
+      - rabbitmq
+
+  frontend:
+    build:
+      context: ./
+      dockerfile: ./frontend/Dockerfile.development
+    restart: unless-stopped
+    volumes:
+      - ./frontend:/usr/src/app/frontend
+    ports:
+      - 3000:3000
+    networks:
+      - mspmr_net
+    depends_on:
+      - api
