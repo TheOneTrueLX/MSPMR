@@ -19,6 +19,7 @@
     "twitchlistener:dev": "cd services/twitch-listener && nodemon src/index.ts | pino-pretty"
   },
   "dependencies": {
+    "@node-redis/client": "^1.0.4",
     "@twurple/api": "^5.0.18",
     "@twurple/auth": "^5.0.18",
     "@twurple/chat": "^5.0.18",
@@ -39,6 +40,7 @@
     "node-fetch": "^3.2.2",
     "node-redis": "^0.1.7",
     "pino": "^5.8.1",
+    "retry": "^0.13.1",
     "socket.io": "^4.4.1",
     "socket.io-client": "^4.4.1",
     "swagger-express-middleware": "^1.1.1",

@@ -1,39 +1,56 @@
 import { RefreshingAuthProvider, AccessToken } from '@twurple/auth';
 import { ApiClient, HelixCustomReward } from '@twurple/api';
 import { PubSubClient, PubSubListener, PubSubMessage, PubSubRedemptionMessage } from '@twurple/pubsub';
-import { createClient } from 'node-redis';
 import axios from 'axios';
+import retry from 'retry';
 
+import { createRedisClient } from './redis';
+import { RedisClientType, RedisModules, RedisScripts } from '@node-redis/client';
 import l from './logger';
 
+async function getOauthTokens(client: RedisClientType<RedisModules, RedisScripts>): Promise<AccessToken> {
+    const operation = retry.operation({
+        forever: true,
+        factor: 1,
+        minTimeout: 30000
+    })
+
+    return new Promise((resolve, reject) => {
+        operation.attempt(async () => {
+            l.info('Checking for Twitch oauth tokens...');
+            const err = !await client.exists('oauth_tokens') ? true : null;
+            if (operation.retry(err)) {
+                l.error('No Twitch oauth tokens found - authenticate with Twitch from the MSPMR frontend');
+                return;
+            }
+            
+            if(await client.exists('oauth_tokens')) {
+                l.info('oauth tokens found')
+                resolve(JSON.parse(await client.get('oauth_tokens')));
+            } else {
+                reject(operation.mainError());
+            }
+        })
+    })
+}
 
 async function main() {
     l.info('MSPMR Twitch PubSub listener service is starting...')
     
     // set up connection to redis
-    const redisClient = createClient({ url: 'redis://redis:6380'});
-
-    redisClient.on('error', (err) => {
-        l.error('Could not connect to redis - terminating...')
-        l.debug(err)
-    })
-
+    const redisClient = createRedisClient('redis://redis:6380/')
     await redisClient.connect()
     
-    // Sanity check - if oauth_tokens doesn't exist in redis, the end user hasn't done
-    // the Twitch oauth2 circlejerk yet.  That needs to happen before starting this service.
-    if(!await redisClient.exists('oauth_tokens')) {
-        l.error('No oauth2 access token data found - terminating...');
-        l.error('Log into your Twitch account from the management website before starting this service.');
-        process.exit(1);
-    }
-
     // Load authentication token data and refresh as needed
-    const tokenData: AccessToken = JSON.parse(await redisClient.get('oauth_tokens'));
+    // If oauth_tokens doesn't exist in redis, the end user hasn't done
+    // the Twitch oauth2 circlejerk yet.  The service will wait indefinitely until
+    // it sees that this has been done, then it will resume normal operation.
+    const tokenData: AccessToken = await getOauthTokens(redisClient);
+
     const authProvider: RefreshingAuthProvider = new RefreshingAuthProvider({
         clientId: process.env.TWITCH_CLIENT_ID,
         clientSecret: process.env.TWITCH_CLIENT_SECRET,
-        onRefresh: async newTokenData => await redisClient.set('oauth_tokens', newTokenData)
+        onRefresh: async newTokenData => await redisClient.set('oauth_tokens', JSON.stringify(newTokenData))
     }, tokenData)
 
     // Setup API connections
@@ -85,7 +102,7 @@ async function main() {
         // Delete the channel point reward
         await apiClient.channelPoints.deleteCustomReward(userId, channelPointReward.id);
         // Close redis
-        await redisClient.disconnect();
+        await redisClient.quit();
         l.info('Shutdown complete.');
     });
 }
