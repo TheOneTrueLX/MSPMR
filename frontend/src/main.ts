@@ -1,23 +1,6 @@
-import { createApp } from 'vue';
-import { createWebHistory, createRouter } from 'vue-router';
-import App from './App.vue';
-import Home from './Home.vue';
-import io from 'socket.io-client';
-import './index.css';
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router'
+import store from './store'
 
-const routes = [
-    { path: '/', component: Home }
-];
-
-const router = createRouter({
-    history: createWebHistory(),
-    routes
-});
-
-const app = createApp(App);
-
-app.use(router);
-
-app.config.globalProperties.$socketio = io(import.meta.env.SOCKETIO_URL);
-
-app.mount('#app');
+createApp(App).use(router).use(store).use(router).mount('#app')
