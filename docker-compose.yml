@@ -12,6 +12,20 @@ services:
     networks:
       - mspmr_net
   
+  adminmongo:
+    image: mrvautin/adminmongo:latest
+    restart: always
+    ports:
+      - 11234:1234
+    environment:
+      HOST: "0.0.0.0"
+      CONN_NAME: mspmr
+      DB_HOST: mongodb
+    networks:
+      - mspmr_net
+    depends_on:
+      - mongodb
+  
   redis:
     image: redis:alpine
     restart: always
@@ -27,8 +41,8 @@ services:
       - 5672:5672
       - 15672:15672
     environment:
-      - RABBITMQ_DEFAULT_USER=admin
-      - RABBITMQ_DEFAULT_PASS=changeme
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: changeme
     networks:
       - mspmr_net
 

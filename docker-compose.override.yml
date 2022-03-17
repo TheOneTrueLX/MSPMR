@@ -17,6 +17,19 @@ services:
       - redis
       - rabbitmq
 
+  twitch-listener:
+    build:
+      context: ./
+      dockerfile: ./services/twitch-listener/Dockerfile.development
+    restart: "no"
+    volumes:
+      - ./services/twitch-listener:/usr/src/app/services/twitch-listener
+    networks:
+      - mspmr_net
+    command: ["echo", "Service twitch-listener disabled"]
+    depends_on:
+      - api
+
   frontend:
     build:
       context: ./

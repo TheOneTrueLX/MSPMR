@@ -3,6 +3,7 @@ version: '3.8'
 services:
   api:
     build:
+      context: ./
       dockerfile: ./services/api/Dockerfile
     restart: unless-stopped
     environment:
@@ -16,8 +17,19 @@ services:
       - redis
       - rabbitmq
 
+  twitch-listener:
+    build:
+      context: ./
+      dockerfile: ./services/twitch-listener/Dockerfile
+    restart: "no"
+    networks:
+      - mspmr_net
+    depends_on:
+      - api
+
   frontend:
     build:
+      context: ./
       dockerfile: ./frontend/Dockerfile
     restart: unless-stopped
     environment:
