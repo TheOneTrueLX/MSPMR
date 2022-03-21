@@ -14,6 +14,10 @@
     "test:debug": "mocha --inspect-brk test/**/*.ts --exit"
   },
   "dependencies": {
+    "@node-redis/client": "^1.0.4",
+    "@twurple/api": "^5.0.18",
+    "@twurple/auth": "^5.0.18",
+    "axios": "^0.26.1",
     "bluebird": "^3.5.3",
     "body-parser": "^1.18.3",
     "cookie-parser": "^1.4.3",

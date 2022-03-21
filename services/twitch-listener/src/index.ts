@@ -4,11 +4,10 @@ import { PubSubClient, PubSubListener, PubSubMessage, PubSubRedemptionMessage } 
 import axios from 'axios';
 import retry from 'retry';
 
-import { createRedisClient } from './redis';
-import { RedisClientType, RedisModules, RedisScripts } from '@node-redis/client';
+import redisClient from './redis';
 import l from './logger';
 
-async function getOauthTokens(client: RedisClientType<RedisModules, RedisScripts>): Promise<AccessToken> {
+async function getOauthTokens(): Promise<AccessToken> {
     const operation = retry.operation({
         forever: true,
         factor: 1,
@@ -18,15 +17,15 @@ async function getOauthTokens(client: RedisClientType<RedisModules, RedisScripts
     return new Promise((resolve, reject) => {
         operation.attempt(async () => {
             l.info('Checking for Twitch oauth tokens...');
-            const err = !await client.exists('oauth_tokens') ? true : null;
+            const err = !await redisClient.exists('oauth_tokens') ? true : null;
             if (operation.retry(err)) {
                 l.error('No Twitch oauth tokens found - authenticate with Twitch from the MSPMR frontend');
                 return;
             }
             
-            if(await client.exists('oauth_tokens')) {
+            if(await redisClient.exists('oauth_tokens')) {
                 l.info('oauth tokens found')
-                resolve(JSON.parse(await client.get('oauth_tokens')));
+                resolve(JSON.parse(await redisClient.get('oauth_tokens')));
             } else {
                 reject(operation.mainError());
             }
@@ -37,15 +36,12 @@ async function getOauthTokens(client: RedisClientType<RedisModules, RedisScripts
 async function main() {
     l.info('MSPMR Twitch PubSub listener service is starting...')
     
-    // set up connection to redis
-    const redisClient = createRedisClient('redis://redis:6380/')
-    await redisClient.connect()
     
     // Load authentication token data and refresh as needed
     // If oauth_tokens doesn't exist in redis, the end user hasn't done
     // the Twitch oauth2 circlejerk yet.  The service will wait indefinitely until
     // it sees that this has been done, then it will resume normal operation.
-    const tokenData: AccessToken = await getOauthTokens(redisClient);
+    const tokenData: AccessToken = await getOauthTokens();
 
     const authProvider: RefreshingAuthProvider = new RefreshingAuthProvider({
         clientId: process.env.TWITCH_CLIENT_ID,

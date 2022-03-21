@@ -1,4 +1,4 @@
-import VideosService from '../../services/videos.service';
+import VideosService from '../../services/videos.service'
 import { Request, Response, NextFunction } from 'express';
 import * as HttpStatus from 'http-status-codes';
 
