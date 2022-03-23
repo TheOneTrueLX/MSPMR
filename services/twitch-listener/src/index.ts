@@ -70,22 +70,38 @@ async function main() {
         userInputRequired: true
     })
 
+
     // Subscribe to Twitch PubSub API listener for channel point redeems
-    const listener: PubSubListener<PubSubMessage> = await pubSubClient.onRedemption(userId, (redeem: PubSubRedemptionMessage) => {
+    const listener: PubSubListener<PubSubMessage> = await pubSubClient.onRedemption(userId, async (redeem: PubSubRedemptionMessage) => {
         if(redeem.rewardId === channelPointReward.id) {
 
-            l.info(`Received media share redeem from ${redeem.userDisplayName}: ${redeem.message} [ID# ${redeem.id}]`);
-            axios.post(`${process.env.API_URL}/videos`, redeem).then(() => {
-                // API call succeeded
-                l.info(`${redeem.id} submitted to API`);
-            }).catch(function (err) {
-                // API call failed
-                l.error(`Failed to submit redeem ${redeem.id} - refunding points to user`);
-                l.debug(err)
+            try {
+                l.info(`Received media share redeem from ${redeem.userDisplayName}: ${redeem.message} [ID# ${redeem.id}]`);
+
+                // build payload for addition to the video queue
+                const payload = {
+                    redeem_id: redeem.id,
+                    submitter: redeem.userDisplayName,
+                    url: redeem.message
+                }
+
+                axios.post(`${process.env.API_URL}/videos`, payload).then(() => {
+                    // API call succeeded
+                    l.info(`${redeem.id} submitted to API`);
+                }).catch(function (err) {
+                    // API call failed
+                    l.error(`Failed to submit redeem ${redeem.id} - refunding points to user`);
+                    l.debug(err)
+                    apiClient.channelPoints.getRedemptionById(userId, redeem.rewardId, redeem.id).then((res) => {
+                        res.updateStatus('CANCELED');
+                    })
+                });
+            } catch (err) {
+                // an error occurred, so we need to refund the channel point redeem
                 apiClient.channelPoints.getRedemptionById(userId, redeem.rewardId, redeem.id).then((res) => {
                     res.updateStatus('CANCELED');
                 })
-            });
+            }
         }
     });
     
