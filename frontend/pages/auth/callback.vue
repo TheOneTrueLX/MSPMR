@@ -1,19 +1,20 @@
 <template>
-    <p>Callback from Twitch API</p>
+    <p>{{ msg }}</p>
 </template>
 
-<script lang="ts">
+<script>
 import Vue from 'vue';
 
 export default Vue.extend({
-    data(): any {
+    data() {
         return {
             msg: 'Please wait...'
         }
     },
-    mounted(): void {
+    mounted() {
         this.$axios.get(`/auth?code=${this.$route.query.code}`).then(() => {
-            this.msg = 'You have successfully authorized MSPMR with Twitch.  You can now close this window/tab.'
+            this.msg = 'You have successfully authorized MSPMR with Twitch.  Redirecting...'
+            this.$router.push('/')
         }).catch((err) => {
             this.msg = `Error occurred during Twitch API authorization: ${err}`;
         })

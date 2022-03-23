@@ -28,6 +28,10 @@ export default {
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
 
+  env: {
+    TwitchClientID: process.env.TWITCH_CLIENT_ID || 'changeme'
+  },
+
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
   buildModules: [
     // https://go.nuxtjs.dev/typescript
@@ -35,6 +39,7 @@ export default {
     '@nuxt/postcss8',
     // https://go.nuxtjs.dev/tailwindcss
     // '@nuxtjs/tailwindcss'
+    '@nuxtjs/fontawesome'
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
@@ -61,6 +66,12 @@ export default {
         }
       }
     ]
+  },
+
+  fontawesome: {
+    icons: {
+      brands: [ 'faTwitch', 'faYoutube', 'faDiscord' ]
+    }
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build

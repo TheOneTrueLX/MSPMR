@@ -17,6 +17,27 @@
   </div>
 </template>
 
+<script>
+  import Vue from 'vue';
+
+  export default Vue.extend({
+    data() {
+      return {
+        videos: null
+      }
+    },
+    asyncData({ $axios }) {
+      try {
+        let { res } = $axios.get('/videos')
+        return { videos: res.data }
+      } catch (err) {
+        // TODO: improve error handling
+        console.log(err)
+      }
+    }
+  })
+</script>
+
 <style>
   h2 {
     font-family: 'Russo One', Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;

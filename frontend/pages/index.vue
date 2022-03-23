@@ -9,13 +9,16 @@
           <div><img class="rounded-full border-2" width="64" height="64" :src="user.profile_image_url" /></div>
           <div>
             <p class="font-bold">{{ user.display_name }}</p>
-            <p class="text-center">Logout</p>
+            <a class="text-center" @click="logout">Logout</a>
           </div>
         </div>
       </div>
       <div class="justify-self-end items-center" v-else>
         <NuxtLink to="/auth">Login</NuxtLink>
       </div>
+    </div>
+    <div>
+      <SubmitVideo></SubmitVideo>
     </div>
     <div>
       <VideoList></VideoList>
@@ -37,9 +40,31 @@ export default Vue.extend({
   mounted() {
     this.socket = this.$nuxtSocket({ channel: '/' })
   },
+  methods: {
+    logout(evt) {
+      evt.preventDefault();
+      this.$axios.delete('/auth').then(() => {
+        console.log('logged out successfully');
+      }).catch((err) => {
+        console.log(err);
+      })
+    }
+  },
   async asyncData({ $axios }) {
-    let { data } = await $axios.get('/auth/user');
-    return { user: data.data[0] }
+    try {
+      let { data } = await $axios.get('/auth/user');
+      return { user: data.data[0] }
+    } catch (err) {
+      if(err.response.status === 401) {
+        // a 401 unauthorized is not a fatal error - 
+        return { user: null }
+      } else {
+        // TODO we need to do something here to notify the user of the error,
+        // but we don't want to abend so we still set user to null
+        console.log(err)
+        return { user: null }
+      }
+    }
   }
 })
 </script>
