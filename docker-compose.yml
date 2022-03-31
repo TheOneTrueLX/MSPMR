@@ -2,30 +2,6 @@ version: '3.8'
 
 services:
 
-  mongodb:
-    image: mongo:latest
-    restart: always
-    ports:
-      - 27017:27017
-    volumes:
-      - mongodb_data:/data/db
-    networks:
-      - mspmr_net
-  
-  adminmongo:
-    image: mrvautin/adminmongo:latest
-    restart: always
-    ports:
-      - 11234:1234
-    environment:
-      HOST: "0.0.0.0"
-      CONN_NAME: mspmr
-      DB_HOST: mongodb
-    networks:
-      - mspmr_net
-    depends_on:
-      - mongodb
-  
   redis:
     image: redis:alpine
     restart: always
@@ -46,8 +22,33 @@ services:
     networks:
       - mspmr_net
 
+  mariadb:
+    image: mariadb
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      MARIADB_ROOT_PASSWORD: changeme
+      MARIADB_DATABASE: mspmr
+      MARIADB_USER: mspmr
+      MARIADB_PASSWORD: changeme  
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - mspmr_net
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - mspmr_net
+    depends_on:
+      - mariadb
+
 volumes:
-  mongodb_data:
+  mariadb_data:
 
 networks:
   mspmr_net:
