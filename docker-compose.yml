@@ -2,53 +2,24 @@ version: '3.8'
 
 services:
 
-  redis:
-    image: redis:alpine
-    restart: always
-    ports:
-      - 6379:6379
-    networks:
-      - mspmr_net
-
-  rabbitmq:
-    image: rabbitmq:management-alpine
-    restart: always
-    ports:
-      - 5672:5672
-      - 15672:15672
-    environment:
-      RABBITMQ_DEFAULT_USER: admin
-      RABBITMQ_DEFAULT_PASS: changeme
-    networks:
-      - mspmr_net
-
-  mariadb:
-    image: mariadb
+  mysql:
+    image: mysql:debian
+    command: --default-authentication-plugin=mysql_native_password
     restart: always
     ports:
       - 3306:3306
     environment:
-      MARIADB_ROOT_PASSWORD: changeme
-      MARIADB_DATABASE: mspmr
-      MARIADB_USER: mspmr
-      MARIADB_PASSWORD: changeme  
+      MYSQL_ROOT_PASSWORD: changeme
+      MYSQL_DATABASE: mspmr
+      MYSQL_USER: mspmr
+      MYSQL_PASSWORD: changeme
     volumes:
-      - mariadb_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
     networks:
       - mspmr_net
-
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8080:8080
-    networks:
-      - mspmr_net
-    depends_on:
-      - mariadb
 
 volumes:
-  mariadb_data:
+  mysql_data:
 
 networks:
   mspmr_net:
