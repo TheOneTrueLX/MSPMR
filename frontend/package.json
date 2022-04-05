@@ -18,8 +18,11 @@
     "@fortawesome/free-regular-svg-icons": "^6.1.1",
     "@fortawesome/free-solid-svg-icons": "^6.1.1",
     "@fortawesome/vue-fontawesome": "^3.0.0-5",
+    "axios": "^0.26.1",
     "daisyui": "^2.13.4",
-    "vue": "^3.2.31"
+    "vue": "^3.2.31",
+    "vue-router": "4",
+    "vuex": "^4.0.2"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.1.0",
