@@ -1,0 +1,8 @@
+ {
+   "watch": [
+      "server/**/*.*",
+      "ormconfig.json",
+      ".env"
+   ],
+    "ext": "js,json,mjs,yaml,yml"
+ }
