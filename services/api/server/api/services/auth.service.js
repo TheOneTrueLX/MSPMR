@@ -1,14 +1,15 @@
 import l from '../../common/logger';
-import models from '../../db';
+import db from '../../db';
+import axios from 'axios';
 import { generateAccessToken } from '../../common/jwt';
 
 class AuthService {
 
-  callback(code) {
+  async callback(code) {
     const oauth2_payload = {
       client_id: process.env.TWITCH_CLIENT_ID,
       client_secret: process.env.TWITCH_CLIENT_SECRET,
-      code: code,
+      code: code || 'undefined',
       grant_type: 'authorization_code',
       redirect_uri: process.env.FRONTEND_AUTH_REDIRECT
     }
@@ -16,63 +17,79 @@ class AuthService {
     // Return the code back to the Twitch oauth2 API and get
     // the access/refresh tokens for the user. This is the last step
     // in the authorization code workflow.
-    axios.post('https://id.twitch.tv/oauth2/token', oauth2_payload).then((oauth2_res) => {
+    var oauth2_res;
+    
+    try {
+      oauth2_res = await axios.post('https://id.twitch.tv/oauth2/token', oauth2_payload);
+    } catch (e) {
+      l.error(`Twitch oauth2 error: ${e}`);
+      l.debug(e.stack);
+      throw(e);
+    }
 
-      // On successful completion of the oauth2 authorization code workflow,
-      // we next need to query the Helix API to get the user's ID, display
-      // name, and e-mail address to complete our local user record.
-      axios.get('https://api.twitch.tv/helix/users', {
+
+    // On successful completion of the oauth2 authorization code workflow,
+    // we next need to query the Helix API to get the user's ID, display
+    // name, and e-mail address to complete our local user record.
+    var tapi_res;
+
+    try {
+      tapi_res = await axios.get('https://api.twitch.tv/helix/users', {
         headers: {
-          Authorization: `Bearer ${oauth2_res.access_token}`,
-          Client-Id: process.env.TWITCH_CLIENT_ID,
+          Authorization: `Bearer ${oauth2_res.data.access_token}`,
+          'Client-Id': process.env.TWITCH_CLIENT_ID,
         }
-      }).then((tapi_res) => {
-        
-        // Checking for an existing user here.  If one exists, we don't
-        // need to insert a new record.  We will still need to update
-        // the access/refresh tokens, though.
-        const [user, created] = models.User.findOrCreate({
-          // Twitch user IDs are immutable, so that's what we search by
-          where: { twitch_clientid: tapi_res.id },
-          defaults: {
-            twitch_username: tapi_res.display_name,
-            twitch_userid: tapi_res.id,
-            email: tapi_res.email
-          }
-        })
+      });
+    } catch (e) {
+      l.error(`Twitch API error: ${e}`);
+      l.debug(e.stack);
+      throw(e);
+    }
 
-        if(created) {
-          l.info(`Added new user ${user.twitch_username} (#${user.twitch_userid})`)
-        } else {
-          l.info(`Updating existing user ${user.twitch_username} (#${user.twitch_userid})`)
-        }
+    // Checking for an existing user here.  If one exists, we don't
+    // need to insert a new record.  We will still need to update
+    // the access/refresh tokens, though.
+    var user;
 
-        // Check the API response for updated usernames/e-mail addresses
-        if(user.twitch_username != tapi_res.display_name) {
-          user.twitch_username = tapi_res.display_name
-        }
+    try {
+      user = await db('users').where('twitch_userid', tapi_res.data.data[0].id);
+      if(user.length > 0) {
+        // update existing user
+        await db('users')
+          .where('twitch_userid', tapi_res.data.data[0].id)
+          .update({
+            twitch_username: tapi_res.data.data[0].display_name,
+            email: tapi_res.data.data[0].email,
+            access_token: oauth2_res.data.access_token,
+            refresh_token: oauth2_res.data.refresh_token,
+            expires_in: oauth2_res.data.expires_in
+          });
+      } else {
+        // create new user
+        await db('users').insert({
+          twitch_username: tapi_res.data.data[0].display_name,
+          twitch_userid: tapi_res.data.data[0].id,
+          email: tapi_res.data.data[0].email,
+          access_token: oauth2_res.data.access_token,
+          refresh_token: oauth2_res.data.refresh_token,
+          expires_in: oauth2_res.data.expires_in
+        });
+      }
 
-        if(user.email != tapi_res.email) {
-          user.email = tapi_res.email
-        }
+      // refresh user "object"
+      user = await db('users').where('twitch_userid', tapi_res.data.data[0].id);
+    } catch (e) {
+      l.error(`MSPMR DB Error: ${e}`);
+      l.debug(e.stack);
+      throw(e);
+    }
 
-        // Update the authentication tokens returned by the oauth2 API
-        user.access_token = oauth2_res.access_token
-        user.refresh_token = oauth2_res.refresh_token
-        user.expires_in = oauth2_res.expires_in
-        await user.save()
-        
-        // Generate a JWT and send it back to the controller
-        return generateAccessToken(user.twitch_clientid)
-
-      }).catch((tapi_err) => {
-        l.error(`Twitch API Error: ${tapi_err}`)
-        return null;
-      })
-    }).catch((oauth2_err) => {
-      l.error(`Twitch Oauth2 Error: ${oauth2_err}`)
-      return null;
-    })
+    // Generate a JWT and send it back to the controller
+    return generateAccessToken({
+      twitch_username: user[0].twitch_username,
+      twitch_userid: user[0].twitch_userid,
+      email: user[0].email
+    });
   }
 
   refreshToken(token) {

@@ -1,17 +1,25 @@
 import Express from 'express';
 import cookieParser from 'cookie-parser';
+import routes from './routes';
 import * as path from 'path';
 import * as bodyParser from 'body-parser';
 import * as http from 'http';
+import cors from 'cors';
 import * as os from 'os';
+import morgan from 'morgan';
 import l from './logger';
-import oas from './swagger';
 
 const app = new Express();
 
+const corsOptions = {
+  origin: 'http://localhost:3000',
+  methods: 'GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS',
+  optionsSuccessStatus: 204
+}
+
 export default class ExpressServer {
   constructor() {
-    const root = path.normalize(`${__dirname}/../..`);
+    const root = path.normalize(`${__dirname}/../..`);  
 
     app.use(bodyParser.json({ limit: process.env.REQUEST_LIMIT || '100kb' }));
     app.use(
@@ -22,12 +30,11 @@ export default class ExpressServer {
     );
     app.use(bodyParser.text({ limit: process.env.REQUEST_LIMIT || '100kb' }));
     app.use(cookieParser(process.env.SESSION_SECRET));
-    app.use(Express.static(`${root}/public`));
-  }
-
-  router(routes) {
-    this.routes = routes;
-    return this;
+    app.use(cors(corsOptions));
+    app.use(morgan('combined'))
+       
+    // initialize route
+    routes(app);
   }
 
   listen(port = process.env.PORT) {
@@ -38,15 +45,13 @@ export default class ExpressServer {
         } @: ${os.hostname()} on port: ${p}}`
       );
 
-    oas(app, this.routes)
-      .then(() => {
-        http.createServer(app).listen(port, welcome(port));
-      })
-      .catch((e) => {
-        l.error(e);
-        // eslint-disable-next-line no-process-exit
-        process.exit(1);
-      });
+    try {
+      http.createServer(app).listen(port, welcome(port));
+    } catch (e) {
+      l.error(e);
+      // eslint-disable-next-line no-process-exit
+      process.exit(1);
+    }
 
     return app;
   }

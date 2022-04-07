@@ -14,7 +14,7 @@ export function authenticateToken(req, res, next) {
 
     if(token == null) return res.sendStatus(401)
     
-    jwt.verify(token, process.env.TOKEN_SECRET, (err, twitch_clientid) => {
+    jwt.verify(token, process.env.TOKEN_SECRET, async (err, twitch_clientid) => {
         if(err) {
             l.error(`Auth error: ${err}`)
             return res.sendStatus(403)
