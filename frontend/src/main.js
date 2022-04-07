@@ -10,6 +10,8 @@ import './index.css'
 
 library.add(fab)
 
+store.dispatch('init')
+
 createApp(App)
 .use(store)
 .use(router)
