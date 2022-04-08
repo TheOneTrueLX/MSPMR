@@ -52,13 +52,14 @@ class AuthService {
     var user;
 
     try {
-      user = await db('users').where('twitch_userid', tapi_res.data.data[0].id);
+      user = await db('users').where('id', tapi_res.data.data[0].id);
       if(user.length > 0) {
         // update existing user
         await db('users')
-          .where('twitch_userid', tapi_res.data.data[0].id)
+          .where('id', tapi_res.data.data[0].id)
           .update({
-            twitch_username: tapi_res.data.data[0].display_name,
+            username: tapi_res.data.data[0].display_name,
+            profile_image: tapi_res.data.data[0].profile_image_url,
             email: tapi_res.data.data[0].email,
             access_token: oauth2_res.data.access_token,
             refresh_token: oauth2_res.data.refresh_token,
@@ -67,8 +68,9 @@ class AuthService {
       } else {
         // create new user
         await db('users').insert({
-          twitch_username: tapi_res.data.data[0].display_name,
-          twitch_userid: tapi_res.data.data[0].id,
+          id: tapi_res.data.data[0].id,
+          username: tapi_res.data.data[0].display_name,
+          profile_image: tapi_res.data.data[0].profile_image_url,
           email: tapi_res.data.data[0].email,
           access_token: oauth2_res.data.access_token,
           refresh_token: oauth2_res.data.refresh_token,
@@ -76,8 +78,10 @@ class AuthService {
         });
       }
 
-      // refresh user "object"
-      user = await db('users').where('twitch_userid', tapi_res.data.data[0].id);
+      // Since knex returns an array of objects (good), we need to
+      // manually reload the user record to "refresh" the user "object"
+      // since there's no special magic to do it.
+      user = await db('users').where('id', tapi_res.data.data[0].id);
     } catch (e) {
       l.error(`MSPMR DB Error: ${e}`);
       l.debug(e.stack);
@@ -86,8 +90,8 @@ class AuthService {
 
     // Generate a JWT and send it back to the controller
     return generateAccessToken({
-      twitch_username: user[0].twitch_username,
-      twitch_userid: user[0].twitch_userid,
+      id: user[0].id,
+      username: user[0].twitch_username,
       email: user[0].email
     });
   }
