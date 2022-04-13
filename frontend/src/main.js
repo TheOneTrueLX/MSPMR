@@ -13,6 +13,7 @@ import { fab } from '@fortawesome/free-brands-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 import './index.css'
+import 'vue-toastification/dist/index.css'
 
 library.add(fab)
 
