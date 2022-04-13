@@ -3,7 +3,6 @@ import UsersService from '../../services/users.service';
 
 export class Controller {
   async currentUser(req, res) {
-    l.debug(JSON.stringify(req.session.user))
     if('user' in req.session) {
       UsersService.currentUser(req.session.user).then((r) => {
         if (r) res.json(r);
