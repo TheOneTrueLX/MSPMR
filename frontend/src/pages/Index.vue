@@ -137,14 +137,14 @@
   const router = useRouter();
   const store = useStore();
 
-  const user = computed(() => store.state.user)
+  const isAuthenticated = computed(() => store.getters.isAuthenticated)
 
   function onClickGetStarted() {
     router.push('/auth')
   }
 
   onMounted(() => {
-    if(user !== null) {
+    if(isAuthenticated.value) {
       router.push('/queue')
     }
   })

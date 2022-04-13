@@ -1,10 +1,12 @@
 import { createStore, createLogger } from 'vuex';
 import mutations from './mutations';
-import getters from './getters';
-import actions from './actions';
+import * as getters from './getters';
+import * as actions from './actions';
 
 const state = {
-    user: null
+    username: null,
+    id: null,
+    profile_image: null,
 }
 
 export default createStore({

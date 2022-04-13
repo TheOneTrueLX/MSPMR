@@ -14,20 +14,20 @@ const route = useRoute();
 const store = useStore();
 const toast = useToast();
 
-const user = computed(() => store.state.user)
+const isAuthenticated = computed(() => store.getters.isAuthenticated)
 
 const axios = inject('axios');
 
 onMounted(() => {
-  if(user === null) {
+  if(!isAuthenticated.value) {
     if(!('error' in route.query)) {
       const payload = {
         code: route.query.code
       }
       axios.post('/auth/callback', payload).then((res) => {
-        console.log(res)
-        console.log(res.data)
-        store.commit('save', res.data);
+        store.commit('saveId', res.data.id);
+        store.commit('saveUsername', res.data.username);
+        store.commit('saveProfileImage', res.data.profile_image);
         toast.success('Successfully logged in!');
         router.push('/queue')
       }).catch((err) => {

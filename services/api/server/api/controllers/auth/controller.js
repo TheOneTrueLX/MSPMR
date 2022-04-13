@@ -23,7 +23,7 @@ export class Controller {
 
   logout(req, res) {
     if(req.session.user) delete req.session.user;
-    res.status(204);
+    res.status(200).json({ message: 'User logged out'});
   }
 
 }
