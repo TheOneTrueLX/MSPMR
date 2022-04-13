@@ -5,16 +5,25 @@ export class Controller {
 
   callback(req, res) {
     AuthService.callback(req.body.code).then((r) => {
-      if (r) res.json(r);
-      else res.status(400).json({ code: 400, message: 'malformed callback from frontend - possibly didn\'t get code from Twitch oauth API' });
+      if (r) {
+        req.session.user = r;
+        res.status(200).json(r);
+      } else {
+        res.status(400).json({ code: 400, message: 'malformed callback from frontend - possibly didn\'t get code from Twitch oauth API' });
+      }
     }).catch((err) => {
       l.error(`Auth service error: ${err}`)
-      res.status(500).json({ code: 500, message: err })
+      if(err.response) {
+        res.status(err.response.status).json(err.response.data)
+      } else {
+        res.status(500).json({ code: 500, message: err })
+      }
     })
   }
 
-  refresh(req, res) {
-    res.status(501).json({ code: 501, message: 'Not Implemented' });
+  logout(req, res) {
+    if(req.session.user) delete req.session.user;
+    res.status(204);
   }
 
 }

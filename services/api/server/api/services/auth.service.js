@@ -1,7 +1,6 @@
 import l from '../../common/logger';
 import db from '../../db';
 import axios from 'axios';
-import { generateAccessToken } from '../../common/jwt';
 
 class AuthService {
 
@@ -63,7 +62,7 @@ class AuthService {
             email: tapi_res.data.data[0].email,
             access_token: oauth2_res.data.access_token,
             refresh_token: oauth2_res.data.refresh_token,
-            expires_in: oauth2_res.data.expires_in
+            expires_at: new Date(new Date().getTime() + (oauth2_res.data.expires_in * 1000))
           });
       } else {
         // create new user
@@ -74,31 +73,24 @@ class AuthService {
           email: tapi_res.data.data[0].email,
           access_token: oauth2_res.data.access_token,
           refresh_token: oauth2_res.data.refresh_token,
-          expires_in: oauth2_res.data.expires_in
+          expires_at: new Date(new Date().getTime() + (oauth2_res.data.expires_in * 1000))
         });
       }
 
       // Since knex returns an array of objects (good), we need to
       // manually reload the user record to "refresh" the user "object"
       // since there's no special magic to do it.
-      user = await db('users').where('id', tapi_res.data.data[0].id);
+      user = await db('users').select('id','username','profile_image','created_at','updated_at').where('id', tapi_res.data.data[0].id);
     } catch (e) {
       l.error(`MSPMR DB Error: ${e}`);
       l.debug(e.stack);
       throw(e);
     }
 
-    // Generate a JWT and send it back to the controller
-    return generateAccessToken({
-      id: user[0].id,
-      username: user[0].twitch_username,
-      email: user[0].email
-    });
+    // return the user object back to the controller
+    return user[0]
+  
   }
-
-  refreshToken(token) {
-    // TODO: add code for refreshing a token
-  } 
 
 }
 
