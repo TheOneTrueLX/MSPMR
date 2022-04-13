@@ -1,33 +1,16 @@
-import { createStore } from 'vuex';
+import { createStore, createLogger } from 'vuex';
+import mutations from './mutations';
+import getters from './getters';
+import actions from './actions';
 
-export const store = createStore({
-    state: {
-        token: null
-    },
-    mutations: {
-        SET_TOKEN (state, value) {
-            state.token = value;
-            localStorage.setItem('token', value);
-        },
-        DELETE_TOKEN (state) {
-            state.token = '';
-            localStorage.setItem('token', '');
-        }
-    },
-    actions: {
-        setToken(store, value) {
-            store.commit('SET_TOKEN', value);
-        },
-        deleteToken(store) {
-            store.commit('DELETE_TOKEN');
-        },
-        init(store) {
-            store.commit('SET_TOKEN', localStorage.getItem('token') || '');
-        }
-    },
-    getters: {
-        token: state => {
-            return state.token;
-        }
-    },
-});
+const state = {
+    user: null
+}
+
+export default createStore({
+    state,
+    getters,
+    actions,
+    mutations,
+    plugins: [createLogger()]
+})
