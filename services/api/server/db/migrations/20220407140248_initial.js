@@ -15,7 +15,7 @@ exports.up = function(knex) {
         table.timestamps(true, true);
     })
     .createTable('channels', function (table) {
-        table.bigint('id').primary().unsigned().notNullable();
+        table.bigIncrements('id').primary().unsigned().notNullable();
         table.bigint('owner_id').notNullable().unsigned();
         table.foreign('owner_id').references('users.id').onDelete('CASCADE').onUpdate('CASCADE');
         table.timestamps(true, true);
