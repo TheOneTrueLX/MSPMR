@@ -130,24 +130,13 @@
 </template>
 
 <script setup>
-  import { onMounted, computed } from 'vue';
   import { useRouter } from 'vue-router';
-  import { useStore } from 'vuex';
 
   const router = useRouter();
-  const store = useStore();
-
-  const isAuthenticated = computed(() => store.getters.isAuthenticated)
 
   function onClickGetStarted() {
     router.push('/auth')
   }
-
-  onMounted(() => {
-    if(isAuthenticated.value) {
-      router.push('/queue')
-    }
-  })
 
 </script>
 

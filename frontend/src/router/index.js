@@ -23,4 +23,19 @@ const router = createRouter({
     routes
 })
 
+router.beforeEach((to, from) => {
+    // Authenticated users have no reason to be hitting /auth or /auth/callback.  As for /, we use this as
+    // a convenience to route authenticated users directly to /queue.
+    if(['/', '/auth', '/auth/callback'].includes(to.path) && localStorage.getItem('isAuthenticated') === '1') {
+        console.log('Redirecting authenticated user to /queue')
+        return { path: '/queue' }
+    }
+
+    // Unauthenticated users who wander to close to /queue will be unceremoniously deposited back in /.
+    if(to.path === '/queue' && localStorage.getItem('isAuthenticated') === '0') {
+        console.log('Redirecting unauthenticated user to /')
+        return { path: '/' }
+    }
+})
+
 export default router;

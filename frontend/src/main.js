@@ -1,5 +1,4 @@
 import { createApp, useAttrs } from 'vue'
-import store from './store'
 import router from './router'
 import App from './App.vue'
 
@@ -22,8 +21,9 @@ app.use(VueAxios, axios)
 app.axios.defaults.baseURL = import.meta.env.VITE_API_URL
 app.axios.defaults.withCredentials = true
 app.provide('axios', app.config.globalProperties.axios)
-app.use(store)
 app.use(router)
 app.use(Toast)
 app.component('font-awesome-icon', FontAwesomeIcon)
 app.mount('#app')
+
+export default app
