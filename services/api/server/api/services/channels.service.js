@@ -27,7 +27,6 @@ class ChannelsService {
           .leftJoin('channels as c', 'b.channels_id', 'c.id')
           .leftJoin('users as d', 'c.owner_id', 'd.id')
           .where('a.id', req.session.user.id);
-        l.debug(JSON.stringify(mod_channels))
         mod_channels.forEach((channel) => {
           if(channel.id !== null && channel.username !== null) {
             results.push({ channel_id: channel.channels_id, channel_name: channel.username, user_status: 'mod' })
