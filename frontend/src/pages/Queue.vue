@@ -3,9 +3,8 @@
         <div class="flex-none items-stretch"><h1 class="text-7xl">MSPMR</h1></div>
         <div class="flex-auto items-stretch text-center self-center">
             <label for="channel_select">Channel:&nbsp;</label>
-            <select id="channel_select" class="select select-bordered w-full max-w-xs">
-                <option selected>TheOneTrueLX (owner)</option>
-                <option>DerWerkzeug (mod)</option>
+            <select v-model="current_channel" id="channel_select" class="select select-bordered w-full max-w-xs">
+                <option v-for="(item, index) in channels" :value="item.channel_id" :key="index">{{ item.channel_name }} ({{ item.user_status }})</option>
             </select>
         </div>
         <div class="flex-none items-stretch min-h-max">
@@ -30,24 +29,34 @@
 <script setup>
   import { ref, inject } from 'vue';
   import { useRouter } from 'vue-router';
-  
-  const router = useRouter();
+ 
 
+  const router = useRouter();
   const axios = inject('axios');
 
   const username = ref(localStorage.getItem('username'));
   const profile_image = ref(localStorage.getItem('profile_image'));
-  
+
+  const channels = ref(null);
+
+  axios.get('/channels').then((res) => {
+    channels.value = res.data;
+    if(!localStorage.getItem('current_channel')) {
+      localStorage.setItem('current_channel', String(channels.value[0].channel_id))        
+    }
+  });
+
+  const current_channel = ref(localStorage.getItem('current_channel'));
+
   function logout(evt) {
-      evt.preventDefault();
-      console.log('click!')
-      axios.delete('/auth/logout').then(() => {
-          localStorage.setItem('isAuthenticated', '0')
-          localStorage.removeItem('id')
-          localStorage.removeItem('username')
-          localStorage.removeItem('profile_image')
-          router.push('/')
-      })
+    evt.preventDefault();
+    axios.delete('/auth/logout').then(() => {
+        localStorage.setItem('isAuthenticated', '0')
+        localStorage.removeItem('id')
+        localStorage.removeItem('username')
+        localStorage.removeItem('profile_image')
+        router.push('/')
+    })
   }
 
 </script>
