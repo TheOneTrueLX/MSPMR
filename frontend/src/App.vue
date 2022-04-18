@@ -1,16 +1,27 @@
 <template>
-  <router-view />
+  <router-view v-slot="{ Component }">
+    <template v-if="Component">
+      <Suspense>
+        <component :is="Component"></component>
+        <template #fallback>
+          <p>Loading...</p>
+        </template>
+      </Suspense>
+    </template>
+  </router-view>
 </template>
 
 <script setup>
-import { onMounted, inject } from 'vue';
+import { onMounted, onErrorCaptured, inject } from 'vue';
 import { useRoute } from 'vue-router';
+import { useToast } from 'vue-toastification';
 
 const route = useRoute();
 const axios = inject('axios');
+const toast = useToast();
 
 onMounted(() => { 
-  if(!(route.path in ['/auth', '/auth/callback']))
+  if(!(route.path in ['/auth', '/auth/callback']) || localStorage.getItem('isAuthenticated') === '0')
   axios.get('/users/current').then((res) => {
     localStorage.setItem('isAuthenticated', '1')
     localStorage.setItem('id', res.data.id)
@@ -26,5 +37,10 @@ onMounted(() => {
     localStorage.removeItem('profile_image');
   })
 });
+
+onErrorCaptured((e) => {
+  toast.error(`MSPMR Error: ${e.message}`)
+  return true;
+})
 
 </script>
