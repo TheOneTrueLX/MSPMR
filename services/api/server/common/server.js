@@ -79,7 +79,7 @@ export default class ExpressServer {
       l.info(
         `up and running in ${
           process.env.NODE_ENV || 'development'
-        } @: ${os.hostname()} on port: ${p}}`
+        } @: ${os.hostname()} on port: ${p}`
       );
 
     try {
