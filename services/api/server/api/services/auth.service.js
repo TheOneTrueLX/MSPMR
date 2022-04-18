@@ -9,6 +9,7 @@ const KNOWN_MODBOTS = [
   'moobot',
   'streamelements',
   'streamlabs',
+  'sery_bot',
 ]
 
 class AuthService {
@@ -129,9 +130,9 @@ class AuthService {
     try {
       // no point in continuing if the channel doesn't have any mods...
       if(tapi_mods_res.data.data.length > 0) {
-        await db('users_channels').where({ channels_id: channel.id }).delete()
+        await db('users_channels').where({ channels_id: channel[0].id }).delete()
         var refresh_mods = [];
-        tapi_mods_res.data.data.forEach((mod) => {
+        tapi_mods_res.data.data.forEach(async function (mod) {
           // While we're here, we need to make sure user accounts are created
           // for the mods being added.  These are just stub accounts without
           // e-mail addresses or any sort of Twitch oauth interaction; they
@@ -147,20 +148,21 @@ class AuthService {
           // seven days.  Short term, we'll just make sure to note this 
           // in the user documentation (HA!).  Long term, maybe we restrict
           // mod access unless there's an active media share session?
-          var mod_check = await db('users').where({ id: mod.id }).count()
-          if(mod_check === 0 && KNOWN_MODBOTS.includes(String(mod.user_name).toLowerCase())) {
-            await db('users').insert({
+          const mod_check = await db('users').where({ id: mod.user_id }).count()
+          if(mod_check[0]['count(*)'] === 0 && !(KNOWN_MODBOTS.includes(String(mod.user_name).toLowerCase()))) {
+            const mod_payload = {
               id: mod.user_id,
               username: mod.user_name,
-            })
+            }
+            await db('users').insert(mod_payload)
           }
 
           // next, we build the payload that we'll use to insert the mods
           // back into the users_channels table...
-          refresh_mods.push({ users_id: mod.user_id, channels_id: channel.id })
+          if(!(KNOWN_MODBOTS.includes(String(mod.user_name).toLowerCase()))) {
+            await db('users_channels').insert({ users_id: mod.user_id, channels_id: Number(channel[0].id) })
+          }
         })
-        // dump our (pay)load into the database
-        await db('users_channels').insert(refresh_mods)
       }
     } catch (e) {
       l.error(`MSPMR DB Error: ${e}`);
@@ -169,7 +171,7 @@ class AuthService {
     }
 
     // return the user object back to the controller
-    return user[0]
+    return user[0];
 
   }
 
