@@ -27,15 +27,16 @@
 </template>
 
 <script setup>
-  import { ref, inject } from 'vue';
+  import { ref, inject, onMounted, reactive} from 'vue';
   import { useRouter } from 'vue-router';
- 
+  import { useToast } from 'vue-toastification';
 
   const router = useRouter();
+  const toast = useToast();
   const axios = inject('axios');
 
-  const username = ref(localStorage.getItem('username'));
-  const profile_image = ref(localStorage.getItem('profile_image'));
+  const username = ref(null);
+  const profile_image = ref(null);
 
   const channels = ref(null);
 
@@ -51,13 +52,19 @@
   function logout(evt) {
     evt.preventDefault();
     axios.delete('/auth/logout').then(() => {
-        localStorage.setItem('isAuthenticated', '0')
-        localStorage.removeItem('id')
-        localStorage.removeItem('username')
-        localStorage.removeItem('profile_image')
         router.push('/')
     })
   }
+
+  onMounted(() => {
+      axios.get('/users/current').then((res) => {
+        username.value = res.data.username;
+        profile_image.value = res.data.profile_image;
+      }).catch((err) => {
+          toast.error(`MSPMR Error: ${err}`)
+          router.push('/')
+      })
+  })
 
 </script>
 

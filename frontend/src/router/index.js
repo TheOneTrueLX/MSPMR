@@ -1,5 +1,6 @@
 // @vue-ignore
 import { createWebHistory, createRouter } from 'vue-router'
+import axios from 'axios'
 
 import Index from '../pages/Index.vue'
 import Queue from '../pages/Queue.vue'
@@ -7,13 +8,26 @@ import AuthRedirect from '../pages/auth/AuthRedirect.vue'
 import AuthCallback from '../pages/auth/AuthCallback.vue'
 
 import NotFound from '../pages/errors/NotFound.vue'
+import { renderSlot } from 'vue'
+
+async function isAuthenticated() {
+    try {
+         const res = await axios.get('/users/auth', {
+            baseURL: import.meta.env.VITE_API_URL,
+            withCredentials: true,
+        })
+        return res.data
+    } catch (e) {
+        return false;
+    }
+}
 
 const routes = [
-    { path: '/', component: Index },
-    { path: '/queue', component: Queue },
+    { path: '/', component: Index, meta: { protected: false }},
+    { path: '/queue', component: Queue, meta: { protected: true }},
     // Authentication Pages
-    { path: '/auth', component: AuthRedirect },
-    { path: '/auth/callback', component: AuthCallback },
+    { path: '/auth', component: AuthRedirect, meta: { protected: false }},
+    { path: '/auth/callback', component: AuthCallback, meta: { protected: false }},
     // 404 Failsafe
     { path: '/:catchAll(.*)', component: NotFound }
 ]
@@ -23,17 +37,14 @@ const router = createRouter({
     routes
 })
 
-router.beforeEach((to, from) => {
-    // Authenticated users have no reason to be hitting /auth or /auth/callback.  As for /, we use this as
-    // a convenience to route authenticated users directly to /queue.
-    if(['/', '/auth', '/auth/callback'].includes(to.path) && localStorage.getItem('isAuthenticated') === '1') {
-        console.log('Redirecting authenticated user to /queue')
-        return { path: '/queue' }
-    }
+router.beforeEach(async (to, from) => {
+    const auth = await isAuthenticated();
 
-    // Unauthenticated users who wander to close to /queue will be unceremoniously deposited back in /.
-    if(to.path === '/queue' && localStorage.getItem('isAuthenticated') === '0') {
-        console.log('Redirecting unauthenticated user to /')
+    if(auth && to.meta.protected == false) {
+        return { path: '/queue' }
+    } 
+    
+    if(!auth && to.meta.protected == true) {
         return { path: '/' }
     }
 })

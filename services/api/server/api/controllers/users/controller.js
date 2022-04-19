@@ -12,5 +12,9 @@ export class Controller {
       res.status(401).end();
     }
   }
+
+  isAuthenticated(req, res) {
+    res.status(200).json('user' in req.session)
+  }
 }
 export default new Controller();

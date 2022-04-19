@@ -5,4 +5,6 @@ import requireAuthorizedUser from '../../middlewares/auth.handler';
 export default express
   .Router()
   .get('/current', requireAuthorizedUser, controller.currentUser)
+  .get('/auth', controller.isAuthenticated)
+  
 
