@@ -1,6 +1,6 @@
 // @vue-ignore
 import { createWebHistory, createRouter } from 'vue-router'
-import axios from 'axios'
+import { isAuthenticated } from '../util/fetch'
 
 import Index from '../pages/Index.vue'
 import Queue from '../pages/Queue.vue'
@@ -9,18 +9,6 @@ import AuthCallback from '../pages/auth/AuthCallback.vue'
 
 import NotFound from '../pages/errors/NotFound.vue'
 import { renderSlot } from 'vue'
-
-async function isAuthenticated() {
-    try {
-         const res = await axios.get('/users/auth', {
-            baseURL: import.meta.env.VITE_API_URL,
-            withCredentials: true,
-        })
-        return res.data
-    } catch (e) {
-        return false;
-    }
-}
 
 const routes = [
     { path: '/', component: Index, meta: { protected: false }},
