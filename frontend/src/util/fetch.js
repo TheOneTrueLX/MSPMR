@@ -12,9 +12,18 @@ export async function fetchCurrentUser() {
 export async function fetchChannelList() {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/channels`, { method: 'GET', credentials: 'include' })
     if(response.status == 401) {
-        return null;
+        return [];
     } else {
         return await response.json();
+    }
+}
+
+export async function fetchVideoList() {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/videos`, { method: 'GET', credentials: 'include' })
+    if(response.status == 401) {
+        return [];
+    } else {
+        return response.json();
     }
 }
 
@@ -37,6 +46,15 @@ export async function authCallback(postData) {
 
 export async function isAuthenticated() {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/users/auth`, { method: 'GET', credentials: 'include' })
+    if([200, 304].includes(response.status)) {
+        return await response.json();
+    } else {
+        return false;
+    }
+}
+
+export async function changeChannel(channel_id) {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/channels/:channel_id`, { method: 'GET', credentials: 'include' })
     if([200, 304].includes(response.status)) {
         return await response.json();
     } else {

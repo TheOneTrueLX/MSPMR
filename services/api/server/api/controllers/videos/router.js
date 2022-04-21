@@ -1,7 +1,8 @@
 import * as express from 'express';
 import controller from './controller';
+import requireAuthorizedUser from '../../middlewares/auth.handler';
 
 export default express
   .Router()
-  .get('/:channel_id', controller.all)
-  .delete('/:id', controller.delete);
+  .get('/', requireAuthorizedUser, controller.all)
+  .delete('/:id', requireAuthorizedUser, controller.delete);
