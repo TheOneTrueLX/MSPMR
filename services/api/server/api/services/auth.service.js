@@ -90,7 +90,7 @@ class AuthService {
       // Since knex returns an array of objects (good), we need to
       // manually reload the user record to "refresh" the user "object"
       // since there's no special magic to do it.
-      user = await db('users').select('id','username','profile_image','created_at','updated_at').where('id', tapi_user_res.data.data[0].id);
+      user = await db('users').select('id','username','profile_image','current_channel','created_at','updated_at').where('id', tapi_user_res.data.data[0].id);
     } catch (e) {
       l.error(`MSPMR DB Error: ${e}`);
       l.debug(e.stack);
@@ -103,7 +103,13 @@ class AuthService {
       channel = await db('channels').where({ owner_id: user[0].id })
       if(channel.length === 0) {
         // this user doesn't have a channel record yet so let's make one
-        await db('channels').insert({ owner_id: user[0].id })
+        const new_channel = await db('channels').insert({ owner_id: user[0].id }, ['id'])
+        await db('users').update('current_channel', new_channel[0].id).where('id', user[0].id)
+      }
+
+      // failsafe in case the user doesn't have a current category set
+      if(user[0].current_channel == null) {
+        await db('users').update('current_channel', channel[0].id).where('id', user[0].id)
       }
 
     } catch (e) {

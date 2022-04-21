@@ -40,6 +40,30 @@ class ChannelsService {
 
       return results;
   }
+
+  async setCurrent(req) {
+    try {
+      // This method will not permit a user to change to a channel that they 
+      // are not either an owner or moderator for. 
+      const own_channel = await db('channels').select('id').where('owner_id', req.session.user.id)
+      const channel_list = await db('users_channels').select('channels_id').where('users_id', req.session.user.id)
+      if((own_channel[0].owner_id == req.params.channel_id) || (channel_list.find(o => o.channel_id == req.params.channel_id))) {
+        // if the change is permitted, update the table and the session object
+        await db('users').update('current_channel', req.params.channel_id).where('id', req.session.user.id);
+        req.session.user.current_channel = req.params.channel_id;
+        
+        // return the updated user object
+        return req.session.user;
+      } else {
+        // Otherwise, do nothing and send back the unaltered user object
+        return req.session.user;
+      }
+    } catch (e) {
+      l.error(`MSPMR API Error: ${e}`);
+      l.debug(e.stack);
+      throw(e);
+    }
+  }
 }
 
 export default new ChannelsService();
