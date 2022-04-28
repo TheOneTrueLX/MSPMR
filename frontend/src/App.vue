@@ -29,7 +29,7 @@
   const toast = useToast();
 
   onErrorCaptured((e) => {
-    toast.error(`MSPMR Error: ${e.message}`);
+    toast.error(`MSPMR Error [App.vue:32]: ${e.message}`);
     return true;
   })
 </script>

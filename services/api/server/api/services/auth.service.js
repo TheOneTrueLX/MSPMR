@@ -109,7 +109,7 @@ class AuthService {
         await db('users').update('current_channel', new_channel[0].id).where('id', user[0].id)
       }
 
-      // failsafe in case the user doesn't have a current category set
+      // failsafe in case the user doesn't have a current channel set
       if(user[0].current_channel == null) {
         await db('users').update('current_channel', channel[0].id).where('id', user[0].id)
       }

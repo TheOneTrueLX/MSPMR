@@ -7,6 +7,7 @@ export class Controller {
     AuthService.callback(req.body.code).then((r) => {
       if (r) {
         req.session.user = r;
+        l.debug(JSON.stringify(req.session.user))
         res.status(200).json(r);
       } else {
         res.status(400).json({ code: 400, message: 'malformed callback from frontend - possibly didn\'t get code from Twitch oauth API' });

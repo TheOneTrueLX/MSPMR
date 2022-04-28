@@ -3,9 +3,10 @@ import puppeteer from 'puppeteer';
 import db from '../../db'
 import l from '../../common/logger';
 
-const youtubeQueue = new Queue('youtube-metadata-queue', 'redis://redis:6379');
+const youtubeQueue = new Queue('youtube-metadata-queue', 'redis://127.0.0.1:6379');
 
 async function scrape(url) {
+    l.debug(`Attempting to scrape metadata from ${url}...`)
     // open up the video in a "browser"
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
@@ -26,9 +27,11 @@ async function scrape(url) {
     var duration;
     try {
         const durationElement = await page.waitForSelector('.ytp-time-duration', {timeout: 5000})
-        duration = await page.evaluate(el => el.innerText, durationElement)
+        var duration_temp = await page.evaluate(el => el.innerText, durationElement)
+        var a = duration_temp.split(':')
+        duration = (+a[0]) * 60 * 60 + (+a[1]) * 60;
     } catch (e) {
-        duration = 'not found'
+        duration = 0
     }
 
     var result;
@@ -44,15 +47,17 @@ async function scrape(url) {
     } catch (e) {
         result = false;
     }
-
     
     await browser.close();
-    return {
+    const payload = {
         url: url,
         title: title,
         duration: duration,
         copyright: result
-    };
+    }
+    
+    l.debug(`Fetched the following from Youtube: ${JSON.stringify(payload)}`)
+    return payload;
 }
 
 youtubeQueue.process(async function (job, done) {
@@ -64,16 +69,18 @@ youtubeQueue.process(async function (job, done) {
     // url = youtube video URL
 
     try {
-        var result = await scrape(job.data.url);
-        job.progress(75);
+        l.info(`[Job ${job.id}] submitted to queue with payload ${JSON.stringify(job.data)}`)
+        const result = await scrape(job.data.url);
+        l.info(`[Job ${job.id}] updating video record #${job.data.id}`)
         await db('videos').update({
             title: result.title,
             duration: result.duration,
             copyright: result.copyright,
             redeem_id: job.data.redeem_id || null,
             status: 'processed'
-        }).where('id', job.data.id)
-        done(null, result);
+        }).where({ id: job.data.id })
+        l.info(`[Job ${job.id}] wrapping up`)
+        done();
     } catch (e) {
         done(e)
     }

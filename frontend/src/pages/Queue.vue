@@ -27,14 +27,14 @@
     <div class="flex justify-between container mx-auto my-8 p-4 bg-slate-900">
         <div class="form-control w-full max-w-full">
             <label class="label">
-                <span class="label-text">Submit Video</span>
+                <h3 class="text-xl">Submit Video</h3>
                 <span class="label-text-alt">Enter Youtube URL below</span>
             </label>
             <input type="text" placeholder="Type here" v-model="video_submission" class="input input-bordered w-full max-w-full">
             <label class="label">
                 <span class="label-text-alt">Videos submitted here will show the channel owner as the submitter.</span>
             </label>
-            <button @click="manualVideoAdd" class="btn mt-4 btn-primary max-w-xs self-end">Submit</button>
+            <button :disabled="!video_submission_valid"  @click="manualVideoAdd" class="btn mt-4 btn-primary max-w-xs self-end">Submit</button>
          </div>
     </div>
     <div class="flex justify-between container mx-auto my-8 p-4 bg-slate-900">
@@ -44,10 +44,10 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue';
+  import { watch, ref } from 'vue';
   import { useRouter } from 'vue-router';
   import { useToast } from 'vue-toastification';
-  import {  apiGet, apiPost, apiDelete } from '../util/fetch'
+  import { apiGet, apiPost, apiDelete } from '../util/fetch'
   
   const router = useRouter();
   const toast = useToast();
@@ -56,12 +56,23 @@
   const channels = ref(await apiGet('/channels')); 
   const videos = ref(await apiGet('/videos'));
 
-  const video_submission = ref(null);
+  const video_submission = ref('');
+  const video_submission_valid = ref(false);
   
-  async function manualVideoAdd(evt) {
-    const response = await apiPost('/videos', {
-        //TODO: define what this post payload needs to look like
-    })
+  // Validate the URL in the submission field.  It needs to be a valid Youtube video URL
+  // in order for the submit button to enable itself.
+  watch(video_submission, (currentValue, oldValue) => {
+      video_submission_valid.value = currentValue.match(/^https?:\/\/(?:www\.)?youtu(?:\.be\/.{11}|be\.com\/watch\?v=.{11})$/) ? true : false
+  })
+
+  async function manualVideoAdd() {
+    const response = await apiPost('/videos', { url: video_submission.value })
+    if('status' in response) {
+      toast.error(`MSPMR Error [Queue.vue:72]: ${response.message}`)
+    } else {
+      toast.success('Video submitted for processing, and will be added to the queue shortly.')
+      video_submission.value = '';
+    }
   }
 
   async function logout(evt) {
@@ -90,4 +101,9 @@
     h1 {
         font-family: 'Russo One', Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
     }
+
+    h3 {
+        font-family: 'Russo One', Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    }
+
 </style>

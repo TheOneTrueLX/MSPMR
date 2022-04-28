@@ -20,11 +20,11 @@ onMounted(async () => {
       code: route.query.code
     }
     const res = await apiPost('/auth/callback', payload);
-    if(res.status == 200) {
+    if(!('status' in res)) {
       toast.success('Successfully logged in!');
       router.push('/queue');
     } else {
-      toast.error(`MSPMR Error: ${res.message}`);
+      toast.error(`MSPMR Error [AuthCallback.vue:37]: ${res.message}`);
       router.push('/');
     }
   } else {
