@@ -8,7 +8,7 @@ import { onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useToast } from 'vue-toastification';
 
-import { authCallback } from '../../util/fetch'
+import { apiPost } from '../../util/fetch'
 
 const router = useRouter();
 const route = useRoute();
@@ -19,7 +19,7 @@ onMounted(async () => {
     const payload = {
       code: route.query.code
     }
-    const res = await authCallback(payload);
+    const res = await apiPost('/auth/callback', payload);
     if(res.status == 200) {
       toast.success('Successfully logged in!');
       router.push('/queue');

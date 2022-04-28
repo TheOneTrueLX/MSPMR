@@ -1,6 +1,6 @@
 // @vue-ignore
 import { createWebHistory, createRouter } from 'vue-router'
-import { isAuthenticated } from '../util/fetch'
+import { apiGet } from '../util/fetch'
 
 import Index from '../pages/Index.vue'
 import Queue from '../pages/Queue.vue'
@@ -26,7 +26,7 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from) => {
-    const auth = await isAuthenticated();
+    const auth = await apiGet('/users/auth');
 
     if(auth && to.meta.protected == false) {
         return { path: '/queue' }

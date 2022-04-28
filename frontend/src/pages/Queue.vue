@@ -25,6 +25,19 @@
         </div>
     </div>
     <div class="flex justify-between container mx-auto my-8 p-4 bg-slate-900">
+        <div class="form-control w-full max-w-full">
+            <label class="label">
+                <span class="label-text">Submit Video</span>
+                <span class="label-text-alt">Enter Youtube URL below</span>
+            </label>
+            <input type="text" placeholder="Type here" v-model="video_submission" class="input input-bordered w-full max-w-full">
+            <label class="label">
+                <span class="label-text-alt">Videos submitted here will show the channel owner as the submitter.</span>
+            </label>
+            <button @click="manualVideoAdd" class="btn mt-4 btn-primary max-w-xs self-end">Submit</button>
+         </div>
+    </div>
+    <div class="flex justify-between container mx-auto my-8 p-4 bg-slate-900">
         <a v-if="videos.length > 0" v-for="video in videos" :href="video.video_url">Placeholder for {{ video.video_url }}</a>
         <p v-else>There are currently no videos in the queue.</p>
     </div>
@@ -34,30 +47,38 @@
   import { ref } from 'vue';
   import { useRouter } from 'vue-router';
   import { useToast } from 'vue-toastification';
-  import { fetchCurrentUser, fetchChannelList, fetchVideoList, sessionLogout, changeChannel } from '../util/fetch'
+  import {  apiGet, apiPost, apiDelete } from '../util/fetch'
   
   const router = useRouter();
   const toast = useToast();
 
-  const user = ref(await fetchCurrentUser());
-  const channels = ref(await fetchChannelList()); 
-  const videos = ref(await fetchVideoList());
+  const user = ref(await apiGet('/users/current'));
+  const channels = ref(await apiGet('/channels')); 
+  const videos = ref(await apiGet('/videos'));
+
+  const video_submission = ref(null);
   
+  async function manualVideoAdd(evt) {
+    const response = await apiPost('/videos', {
+        //TODO: define what this post payload needs to look like
+    })
+  }
+
   async function logout(evt) {
     evt.preventDefault();
-    await sessionLogout();
+    await apiDelete('/auth/logout');
     router.push('/');
   }
 
   async function changeChannelDropdown(evt) {
     evt.preventDefault();
-    const response = await changeChannel(user.current_channel)
+    const response = await apiGet(`/channels/${user.current_channel}`)
     if(response) {
         if(!user.value.current_channel == response.current_channel) {
             toast.error('MSPMR Error: User not authorized to change channel')
         }
         user.value.current_channel = response.current_channel
-        videos.value = fetchVideoList();
+        videos.value = await apiGet('/videos');
     } else {
         toast.error('MSPMR Error: Unable to change channel')
     }
