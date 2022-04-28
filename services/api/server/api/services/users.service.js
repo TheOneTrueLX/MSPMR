@@ -4,6 +4,7 @@ import axios from 'axios';
 
 class UsersService {
   async currentUser(u) {
+    l.info(`${this.constructor.name}.currentUser()`);
     const user = await db('users').where({ id: u.id })
     // if the last field update + expires_at is <= current date, the tokens
     // we got from Twitch are expired.

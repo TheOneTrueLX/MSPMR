@@ -15,6 +15,7 @@ const KNOWN_MODBOTS = [
 class AuthService {
 
   async callback(code) {
+    l.info(`${this.constructor.name}.callback()`);
     const oauth2_payload = {
       client_id: process.env.TWITCH_CLIENT_ID,
       client_secret: process.env.TWITCH_CLIENT_SECRET,
@@ -103,7 +104,8 @@ class AuthService {
       channel = await db('channels').where({ owner_id: user[0].id })
       if(channel.length === 0) {
         // this user doesn't have a channel record yet so let's make one
-        const new_channel = await db('channels').insert({ owner_id: user[0].id }, ['id'])
+        await db('channels').insert({ owner_id: user[0].id })
+        const new_channel = await db('channels').where('owner_id', user[0].id )
         await db('users').update('current_channel', new_channel[0].id).where('id', user[0].id)
       }
 
