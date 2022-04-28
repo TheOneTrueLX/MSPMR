@@ -22,6 +22,7 @@
     "@vscode/sqlite3": "^5.0.8",
     "axios": "^0.26.1",
     "body-parser": "^1.19.0",
+    "bull": "^4.8.2",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
@@ -34,6 +35,7 @@
     "morgan": "^1.10.0",
     "mysql2": "^2.3.3",
     "pino": "^6.11.3",
+    "puppeteer": "^13.6.0",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {

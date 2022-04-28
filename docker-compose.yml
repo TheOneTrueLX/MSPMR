@@ -18,6 +18,14 @@ services:
     networks:
       - mspmr_net
 
+  redis:
+    image: redis:alpine
+    restart: always
+    ports:
+      - 6379:6379
+    networks:
+      - mspmr_net
+
 volumes:
   mysql_data:
 
