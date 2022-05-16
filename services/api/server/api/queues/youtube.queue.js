@@ -29,7 +29,11 @@ async function scrape(url) {
         const durationElement = await page.waitForSelector('.ytp-time-duration', {timeout: 5000})
         var duration_temp = await page.evaluate(el => el.innerText, durationElement)
         var a = duration_temp.split(':')
-        duration = (+a[0]) * 60 * 60 + (+a[1]) * 60;
+        if(a.length == 3) {
+            duration = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[3]);
+        } else {
+            duration = (+a[0]) * 60 + (+a[1]);
+        }
     } catch (e) {
         duration = 0
     }
