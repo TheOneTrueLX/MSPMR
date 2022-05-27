@@ -20,8 +20,10 @@ async function scrape(url) {
     try { 
         const titleElement = await page.waitForSelector('yt-formatted-string.ytd-video-primary-info-renderer:nth-child(1)', {timeout: 5000})
         title = await page.evaluate(el => el.innerText, titleElement)
+        l.debug(`found title ${title}`)
     } catch (e) {
         title = 'not found'
+        l.debug(`Could not find title`)
     }
 
     var duration;
@@ -31,11 +33,14 @@ async function scrape(url) {
         var a = duration_temp.split(':')
         if(a.length == 3) {
             duration = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[3]);
+            l.debug(`found duration ${duration}`)
         } else {
             duration = (+a[0]) * 60 + (+a[1]);
+            l.debug(`found duration ${duration}`)
         }
     } catch (e) {
         duration = 0
+        l.debug('could not find duration')
     }
 
     var result;
@@ -45,11 +50,14 @@ async function scrape(url) {
 
         if(copyrightText == 'Music in this video') {
             result = true;
+            l.debug(`found copyright: ${duration}`)
         } else {
             result = false;
+            l.debug(`found copyright: ${duration}`)
         }    
     } catch (e) {
         result = false;
+        l.debug(`found copyright: ${duration}`)
     }
     
     await browser.close();

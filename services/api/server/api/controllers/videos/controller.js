@@ -5,6 +5,10 @@ export class Controller {
     VideosService.all(req).then((r) => res.json(r));
   }
 
+  byUser(req, res) {
+    VideosService.byUser(req).then((r) => res.json(r));
+  }
+
   add(req, res) {
     VideosService.add(req).then((r) => res.json(r));
   }

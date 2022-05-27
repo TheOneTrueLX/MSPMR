@@ -50,11 +50,11 @@
                     <span v-if="video.copyright == 1" class="text-2xl font-bold text-red-600" target="_blank"><font-awesome-icon :icon="['fa', 'circle-exclamation']" size="lg"></font-awesome-icon>&nbsp;COPYRIGHT WARNING</span>
                 </div>
                 <div v-if="index == 0" class="col-span-9 text-center mt-8 space-x-4">
-                    <button class="btn bg-sky-900"><font-awesome-icon :icon="['fa', 'backward-fast']" size="lg"></font-awesome-icon></button>
-                    <button class="btn bg-sky-700"><font-awesome-icon :icon="['fa', 'backward']" size="lg"></font-awesome-icon></button>
-                    <button class="btn bg-green-700"><font-awesome-icon :icon="['fa', 'play']" size="lg"></font-awesome-icon></button>
-                    <button class="btn bg-sky-700"><font-awesome-icon :icon="['fa', 'forward']" size="lg"></font-awesome-icon></button>
-                    <button class="btn bg-red-800"><font-awesome-icon :icon="['fa', 'trash']" size="lg"></font-awesome-icon></button>
+                    <button @click="mediaButtonClick('video-startover')" class="btn bg-sky-900"><font-awesome-icon :icon="['fa', 'backward-fast']" size="lg"></font-awesome-icon></button>
+                    <button @click="mediaButtonClick('video-rewind')" class="btn bg-sky-700"><font-awesome-icon :icon="['fa', 'backward']" size="lg"></font-awesome-icon></button>
+                    <button @click="mediaButtonClick('video-playpause')" class="btn bg-green-700"><font-awesome-icon :icon="['fa', 'play']" size="lg"></font-awesome-icon>/<font-awesome-icon :icon="['fa', 'pause']" size="lg"></font-awesome-icon></button>
+                    <button @click="mediaButtonClick('video-fastforward')" class="btn bg-sky-700"><font-awesome-icon :icon="['fa', 'forward']" size="lg"></font-awesome-icon></button>
+                    <button @click="mediaButtonClick('video-remove')" class="btn bg-red-800"><font-awesome-icon :icon="['fa', 'trash']" size="lg"></font-awesome-icon></button>
                 </div>
             </div>
         </div>
@@ -63,18 +63,21 @@
 </template>
 
 <script setup>
-  import { watch, ref } from 'vue';
+  import { watch, ref, onMounted } from 'vue';
   import { useRouter } from 'vue-router';
   import { useToast } from 'vue-toastification';
   import { apiGet, apiPost, apiDelete } from '../util/fetch'
   import { getYoutubeThumbnail } from '../util/yt';
+  import { useSocketIO } from '../util/socket'
   
   const router = useRouter();
   const toast = useToast();
+  const { socket } = useSocketIO();
 
   const user = ref(await apiGet('/users/current'));
+  
   const channels = ref(await apiGet('/channels')); 
-  const videos = ref(await apiGet('/videos'));
+  var videos = ref(await apiGet('/videos'));
 
   const video_submission = ref('');
   const video_submission_valid = ref(false);
@@ -110,6 +113,11 @@
     router.push('/');
   }
 
+  async function mediaButtonClick(mode) {
+      console.log(`sending signal '${mode}' to API`)
+      socket.emit(mode)
+  }
+
   async function changeChannelDropdown(evt) {
     evt.preventDefault();
     const response = await apiGet(`/channels/${user.current_channel}`)
@@ -123,6 +131,12 @@
         toast.error('MSPMR Error: Unable to change channel')
     }
   }
+
+  onMounted(() => {
+    socket.on('reload-queue', async (data) => {
+        videos = await apiGet('/videos')
+    })
+  })
 
 </script>
 

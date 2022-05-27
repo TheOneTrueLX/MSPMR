@@ -4,6 +4,7 @@ import { apiGet } from '../util/fetch'
 
 import Index from '../pages/Index.vue'
 import Queue from '../pages/Queue.vue'
+import PublicQueue from '../pages/users/Index.vue'
 import AuthRedirect from '../pages/auth/AuthRedirect.vue'
 import AuthCallback from '../pages/auth/AuthCallback.vue'
 
@@ -11,11 +12,12 @@ import NotFound from '../pages/errors/NotFound.vue'
 import { renderSlot } from 'vue'
 
 const routes = [
-    { path: '/', component: Index, meta: { protected: false }},
-    { path: '/queue', component: Queue, meta: { protected: true }},
+    { path: '/', name: 'home', component: Index },
+    { path: '/queue', name: 'queue', component: Queue },
+    { path: '/users/:username', name: 'user', component: PublicQueue },
     // Authentication Pages
-    { path: '/auth', component: AuthRedirect, meta: { protected: false }},
-    { path: '/auth/callback', component: AuthCallback, meta: { protected: false }},
+    { path: '/auth', name: 'auth', component: AuthRedirect },
+    { path: '/auth/callback', name: 'callback', component: AuthCallback },
     // 404 Failsafe
     { path: '/:catchAll(.*)', component: NotFound }
 ]
@@ -25,16 +27,13 @@ const router = createRouter({
     routes
 })
 
-router.beforeEach(async (to, from) => {
-    const auth = await apiGet('/users/auth');
+router.beforeEach(async (to, from, next) => {
+    const auth = await apiGet('/users/auth')
 
-    if(auth && to.meta.protected == false) {
-        return { path: '/queue' }
-    } 
-    
-    if(!auth && to.meta.protected == true) {
-        return { path: '/' }
-    }
+    if(to.name === 'queue' && !auth) next({ name: 'home' })
+    else if(to.name === 'home' && auth) next({ name: 'queue' })
+    else if(['auth','callback'].includes(to.name) && auth) next({ name: 'queue' })
+    else next()
 })
 
 export default router;

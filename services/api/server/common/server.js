@@ -6,12 +6,14 @@ import * as bodyParser from 'body-parser';
 import * as http from 'https';
 import cors from 'cors';
 import * as os from 'os';
+import socketio from 'socket.io';
 import morgan from 'morgan';
 import l from './logger';
 import fs from 'fs';
 import session from 'express-session';
 import MySQLStore from 'express-mysql-session';
 import db from '../db';
+import io from './socketio'
 
 const app = new Express();
 
@@ -52,6 +54,10 @@ const sessionOptions = {
   unset: 'destroy'
 }
 
+const ses = session(sessionOptions);
+
+const wrap = middleware => (socket, next) => middleware(socket.request, {}, next);
+
 export default class ExpressServer {
   constructor() {
     const root = path.normalize(`${__dirname}/../..`);  
@@ -66,7 +72,7 @@ export default class ExpressServer {
     app.use(bodyParser.text({ limit: process.env.REQUEST_LIMIT || '100kb' }));
     // this allegedly isn't needed anymore
     // app.use(cookieParser());
-    app.use(session(sessionOptions));
+    app.use(ses);
     app.use(cors(corsOptions));
     app.use(morgan('combined'));
        
@@ -83,7 +89,10 @@ export default class ExpressServer {
       );
 
     try {
-      http.createServer(httpOptions, app).listen(port, welcome(port));
+      const httpServer = http.createServer(httpOptions, app);
+      io.use(wrap(ses));
+      io.attach(httpServer, { cors: corsOptions });
+      httpServer.listen(port, welcome(port));
     } catch (e) {
       l.error(e);
       // eslint-disable-next-line no-process-exit
