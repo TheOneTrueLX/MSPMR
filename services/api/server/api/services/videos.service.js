@@ -45,6 +45,30 @@ class VideosService {
     }
   }
 
+  async byUser(req) {
+    var user = [];
+    var data = [];
+    try {
+      user = await db('users').where('username', req.params.username)
+      const channels = await db('channels').where('owner_id', user[0].id)
+      data = await db('videos').where({
+        channels_id: channels[0].id,
+        status: 'processed'
+      })
+    } catch (e) {
+      l.error(`MSPMR DB Error: ${e}`)
+      l.debug(e.stack);
+      throw(e);
+    }
+
+    return {
+      meta: {
+        username: user[0].username,
+      },
+      data: data,
+    }
+  }
+
   delete(req) {
     l.info(`${this.constructor.name}.delete()`);
     return db(videos).where('id', req.params.id).delete('id');
