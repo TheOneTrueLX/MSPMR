@@ -4,57 +4,23 @@ import routes from './routes';
 import * as path from 'path';
 import * as bodyParser from 'body-parser';
 import * as http from 'https';
+import corsOptions from './cors'
 import cors from 'cors';
 import * as os from 'os';
-import socketio from 'socket.io';
+import Server from 'socket.io'
+import { SIOConfig, onSIOConnection, onSIOError } from './socketio';
 import morgan from 'morgan';
 import l from './logger';
 import fs from 'fs';
-import session from 'express-session';
-import MySQLStore from 'express-mysql-session';
+import sessionMiddleware from './session'
 import db from '../db';
-import io from './socketio'
 
 const app = new Express();
-
-const corsOptions = {
-  origin: 'https://localhost:3000',
-  methods: 'GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS',
-  optionsSuccessStatus: 204,
-  credentials: true,
-  exposedHeaders: ['set-cookie']
-}
 
 const httpOptions = {
   key: fs.readFileSync('../../etc/mspmr.key'),
   cert: fs.readFileSync('../../etc/mspmr.crt')
 }
-
-const sessionStoreOptions = {
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT),
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME
-}
-
-const sessionStore = new MySQLStore(sessionStoreOptions);
-
-const sessionOptions = {
-  store: sessionStore,
-  secret: process.env.SESSION_SECRET,
-  cookie: {
-    // (days * hours * minutes * seconds * milliseconds)
-    maxAge: (7 * 24 * 60 * 60 * 1000),
-    secure: true,
-    sameSite: 'strict',
-  },
-  saveUninitialized: false,
-  resave: false,
-  unset: 'destroy'
-}
-
-const ses = session(sessionOptions);
 
 const wrap = middleware => (socket, next) => middleware(socket.request, {}, next);
 
@@ -70,9 +36,7 @@ export default class ExpressServer {
       })
     );
     app.use(bodyParser.text({ limit: process.env.REQUEST_LIMIT || '100kb' }));
-    // this allegedly isn't needed anymore
-    // app.use(cookieParser());
-    app.use(ses);
+    app.use(sessionMiddleware);
     app.use(cors(corsOptions));
     app.use(morgan('combined'));
        
@@ -90,8 +54,12 @@ export default class ExpressServer {
 
     try {
       const httpServer = http.createServer(httpOptions, app);
-      io.use(wrap(ses));
-      io.attach(httpServer, { cors: corsOptions });
+      const io = Server(httpServer, SIOConfig)
+      
+      io.use(wrap(sessionMiddleware));
+      io.on('connection', onSIOConnection)
+      io.on('error', onSIOError)
+
       httpServer.listen(port, welcome(port));
     } catch (e) {
       l.error(e);

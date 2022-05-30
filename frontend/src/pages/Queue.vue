@@ -50,11 +50,11 @@
                     <span v-if="video.copyright == 1" class="text-2xl font-bold text-red-600" target="_blank"><font-awesome-icon :icon="['fa', 'circle-exclamation']" size="lg"></font-awesome-icon>&nbsp;COPYRIGHT WARNING</span>
                 </div>
                 <div v-if="index == 0" class="col-span-9 text-center mt-8 space-x-4">
-                    <button @click="mediaButtonClick('video-startover')" class="btn bg-sky-900"><font-awesome-icon :icon="['fa', 'backward-fast']" size="lg"></font-awesome-icon></button>
-                    <button @click="mediaButtonClick('video-rewind')" class="btn bg-sky-700"><font-awesome-icon :icon="['fa', 'backward']" size="lg"></font-awesome-icon></button>
-                    <button @click="mediaButtonClick('video-playpause')" class="btn bg-green-700"><font-awesome-icon :icon="['fa', 'play']" size="lg"></font-awesome-icon>/<font-awesome-icon :icon="['fa', 'pause']" size="lg"></font-awesome-icon></button>
-                    <button @click="mediaButtonClick('video-fastforward')" class="btn bg-sky-700"><font-awesome-icon :icon="['fa', 'forward']" size="lg"></font-awesome-icon></button>
-                    <button @click="mediaButtonClick('video-remove')" class="btn bg-red-800"><font-awesome-icon :icon="['fa', 'trash']" size="lg"></font-awesome-icon></button>
+                    <button @click="mediaButtonClick('video:startover')" class="btn bg-sky-900"><font-awesome-icon :icon="['fa', 'backward-fast']" size="lg"></font-awesome-icon></button>
+                    <button @click="mediaButtonClick('video:rewind')" class="btn bg-sky-700"><font-awesome-icon :icon="['fa', 'backward']" size="lg"></font-awesome-icon></button>
+                    <button @click="mediaButtonClick('video:playpause')" class="btn bg-green-700"><font-awesome-icon :icon="['fa', 'play']" size="lg"></font-awesome-icon>/<font-awesome-icon :icon="['fa', 'pause']" size="lg"></font-awesome-icon></button>
+                    <button @click="mediaButtonClick('video:fastforward')" class="btn bg-sky-700"><font-awesome-icon :icon="['fa', 'forward']" size="lg"></font-awesome-icon></button>
+                    <button @click="mediaButtonClick('video:remove')" class="btn bg-red-800"><font-awesome-icon :icon="['fa', 'trash']" size="lg"></font-awesome-icon></button>
                 </div>
             </div>
         </div>
