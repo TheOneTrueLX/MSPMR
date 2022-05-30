@@ -26,8 +26,8 @@
 <script setup>
   import { ref } from 'vue';
   import { useRoute } from 'vue-router';
-  import { apiGet } from '../../util/fetch'
-  import { getYoutubeThumbnail } from '../../util/yt';
+  import { apiGet } from '../util/fetch'
+  import { getYoutubeThumbnail } from '../util/yt';
   
   const route = useRoute();
 

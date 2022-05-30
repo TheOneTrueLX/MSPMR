@@ -4,7 +4,8 @@ import { apiGet } from '../util/fetch'
 
 import Index from '../pages/Index.vue'
 import Queue from '../pages/Queue.vue'
-import PublicQueue from '../pages/users/Index.vue'
+import Users from '../pages/Users.vue'
+import Overlay from '../pages/Overlay.vue'
 import AuthRedirect from '../pages/auth/AuthRedirect.vue'
 import AuthCallback from '../pages/auth/AuthCallback.vue'
 
@@ -14,7 +15,8 @@ import { renderSlot } from 'vue'
 const routes = [
     { path: '/', name: 'home', component: Index },
     { path: '/queue', name: 'queue', component: Queue },
-    { path: '/users/:username', name: 'user', component: PublicQueue },
+    { path: '/users/:username', name: 'user', component: Users },
+    { path: '/overlay/:token', name: 'overlay', component: Overlay },
     // Authentication Pages
     { path: '/auth', name: 'auth', component: AuthRedirect },
     { path: '/auth/callback', name: 'callback', component: AuthCallback },

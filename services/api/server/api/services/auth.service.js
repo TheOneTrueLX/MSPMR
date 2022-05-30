@@ -1,6 +1,7 @@
 import l from '../../common/logger';
 import db from '../../db';
 import axios from 'axios';
+import crypto from 'crypto';
 
 // MAKE SURE THESE ARE LOWER CASE!
 // Also TODO: find a more elegant way to do this
@@ -64,12 +65,19 @@ class AuthService {
     try {
       user = await db('users').where('id', tapi_user_res.data.data[0].id);
       if(user.length > 0) {
+        var overlay_api_key;
+        if(user.overlay_api_key == null || user.overlay_api_key == '') {
+          overlay_api_key = crypto.createHash('sha512').update(String(new Date())).digest('hex');
+        } else {
+          overlay_api_key = user.overlay_api_key;
+        }
         // update existing user
         await db('users')
           .where('id', tapi_user_res.data.data[0].id)
           .update({
             username: tapi_user_res.data.data[0].display_name,
             profile_image: tapi_user_res.data.data[0].profile_image_url,
+            overlay_api_key: overlay_api_key,
             email: tapi_user_res.data.data[0].email,
             access_token: oauth2_res.data.access_token,
             refresh_token: oauth2_res.data.refresh_token,
@@ -81,6 +89,7 @@ class AuthService {
           id: tapi_user_res.data.data[0].id,
           username: tapi_user_res.data.data[0].display_name,
           profile_image: tapi_user_res.data.data[0].profile_image_url,
+          overlay_api_key: crypto.createHash('sha512').update(new Date()).digest('hex'),
           email: tapi_user_res.data.data[0].email,
           access_token: oauth2_res.data.access_token,
           refresh_token: oauth2_res.data.refresh_token,
@@ -91,7 +100,7 @@ class AuthService {
       // Since knex returns an array of objects (good), we need to
       // manually reload the user record to "refresh" the user "object"
       // since there's no special magic to do it.
-      user = await db('users').select('id','username','profile_image','current_channel','created_at','updated_at').where('id', tapi_user_res.data.data[0].id);
+      user = await db('users').select('id','username','overlay_api_key','profile_image','current_channel','created_at','updated_at').where('id', tapi_user_res.data.data[0].id);
     } catch (e) {
       l.error(`MSPMR DB Error: ${e}`);
       l.debug(e.stack);
