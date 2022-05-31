@@ -73,6 +73,35 @@ class VideosService {
     l.info(`${this.constructor.name}.delete()`);
     return db(videos).where('id', req.params.id).delete('id');
   }
+
+  async currentVideo(req) {
+    var user = []
+    var channel = []
+    var video = []
+
+    try {
+      user = await db('users').where('overlay_api_key', req.params.apikey)
+      if(user.length > 0) {
+        channel = await db('channels').select('id').where('owner_id', user[0].id)
+        video = await db('videos').where('channels_id', channel[0].id).limit(1)
+      } else {
+        return {}
+      }
+    } catch (e) {
+      l.error(`MSPMR DB Error: ${e}`)
+      l.debug(e.stack)
+      throw(e)
+    }
+
+    return {
+      meta: {
+        id: user[0].id,
+        userName: user[0].username,
+        channelId: channel[0].id,
+      },
+      data: video[0],
+    }
+  }
 }
 
 export default new VideosService();

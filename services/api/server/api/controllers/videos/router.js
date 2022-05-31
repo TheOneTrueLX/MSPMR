@@ -6,5 +6,6 @@ export default express
   .Router()
   .get('/:username', controller.byUser)
   .get('/', requireAuthorizedUser, controller.all)
+  .get('/current/:apikey', controller.currentVideo)
   .post('/', requireAuthorizedUser, controller.add)
   .delete('/:id', requireAuthorizedUser, controller.delete);

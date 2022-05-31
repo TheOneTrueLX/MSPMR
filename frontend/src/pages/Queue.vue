@@ -20,6 +20,7 @@
                 <div class="text-center self-center">
                     <p class="font-bold">{{ user.username }}</p>
                     <p><a class="underline" href="#" @click="logout">logout</a></p>
+                    <p><a class="underline" :href="`/overlay/${user.overlay_api_key}`">Overlay <font-awesome-icon :icon="['fa', 'link']" size="lg"></font-awesome-icon></a></p>
                 </div>
             </div>
         </div>

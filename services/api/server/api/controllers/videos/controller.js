@@ -13,6 +13,10 @@ export class Controller {
     VideosService.add(req).then((r) => res.json(r));
   }
 
+  currentVideo(req, res) {
+    VideosService.currentVideo(req).then((r) => res.json(r));
+  }
+
   delete(req, res) {
     VideosService.delete(req).then((r) =>
       res.status(201).location(`/api/v1/videos/${r.id}`).json(r)

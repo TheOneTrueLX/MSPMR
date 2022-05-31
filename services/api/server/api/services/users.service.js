@@ -43,7 +43,7 @@ class UsersService {
         })
       }
     }
-    const authUser = await db('users').select('id','username','profile_image','current_channel','created_at','updated_at').where({ id: u.id });
+    const authUser = await db('users').select('id','username','overlay_api_key','profile_image','current_channel','created_at','updated_at').where({ id: u.id });
     return authUser[0];
   }
 }

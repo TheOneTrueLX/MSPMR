@@ -16,7 +16,7 @@ const routes = [
     { path: '/', name: 'home', component: Index },
     { path: '/queue', name: 'queue', component: Queue },
     { path: '/users/:username', name: 'user', component: Users },
-    { path: '/overlay/:token', name: 'overlay', component: Overlay },
+    { path: '/overlay/:apikey', name: 'overlay', component: Overlay },
     // Authentication Pages
     { path: '/auth', name: 'auth', component: AuthRedirect },
     { path: '/auth/callback', name: 'callback', component: AuthCallback },
