@@ -2,6 +2,21 @@ import l from '../../common/logger';
 import db from '../../db';
 import youtubeQueue from '../queues/youtube.queue';
 
+async function getCurrentSortIndex(channel_id) {
+  try {
+    const index = await db('videos').max('sort_index').where({ channels_id: channel_id, status: 'processed' })
+    if(index) {
+      return index[0]++
+    } else {
+      return 1
+    }
+  } catch (e) {
+    l.error(`Unable to get sort index for channel ${channel_id}: ${e}`)
+    l.debug(e.stack)
+    throw(e)
+  }
+}
+
 class VideosService {
   async all(req) {
     l.info(`${this.constructor.name}.all()`);
@@ -10,7 +25,7 @@ class VideosService {
       videos = await db('videos').where({
         channels_id: req.session.user.current_channel,
         status: 'processed'
-      })
+      }).orderBy('sort_index')
     } catch (e) {
       l.error(`MSPMR DB error: ${e}`)
       throw(e);
@@ -34,9 +49,10 @@ class VideosService {
       const video = await db('videos').select(['id','video_url']).where({
           channels_id: req.session.user.current_channel,
           video_url: req.body.url,
+          sort_index: getCurrentSortIndex(req.session.user.current_channel),
           status: 'pending'
         }).orderBy('created_at', 'desc').limit(1)
-      youtubeQueue.add({ id: video[0].id, url: video[0].video_url })
+      youtubeQueue.add({ id: video[0].id, url: video[0].video_url, user: req.session.user })
       return video[0];
     } catch (e) {
       l.error(`MSPMR DB Error: ${e}`);
@@ -54,7 +70,7 @@ class VideosService {
       data = await db('videos').where({
         channels_id: channels[0].id,
         status: 'processed'
-      })
+      }).orderBy('sort_index')
     } catch (e) {
       l.error(`MSPMR DB Error: ${e}`)
       l.debug(e.stack);
@@ -102,6 +118,71 @@ class VideosService {
       data: video[0],
     }
   }
+
+  async promoteVideo(req) {
+    var channel_id;
+    try {
+      const target_video = await db('videos').where('id', req.params.video_id)
+      channel_id = target_video[0].channels_id
+      const prev_video = await db('videos')
+        .where('channels_id', target_video[0].channels_id)
+        .andWhere('sort_index', '<', target_video[0].sort_index)
+        .andWhere('status', 'processed')
+        .orderBy('sort_index', 'desc')
+        .limit(1)
+      
+      if(prev_video.length > 0) {
+        l.debug(`promoting record id# ${target_video[0].id}`)
+        await db('videos').update('sort_index', prev_video[0].sort_index).where('id', target_video[0].id)
+        await db('videos').update('sort_index', target_video[0].sort_index).where('id', prev_video[0].id)
+      }
+
+      const payload = await db('videos').where({
+        channels_id: req.session.user.current_channel,
+        status: 'processed'
+      }).orderBy('sort_index')
+
+      return payload
+
+    } catch (e) {
+      l.error(`Unable to get sort index for channel ${channel_id}: ${e}`)
+      l.debug(e.stack)
+      throw(e)
+    }
+  }
+  
+  async demoteVideo(req) {
+    var channel_id;
+    try {
+      const target_video = await db('videos').where('id', req.params.video_id)
+      channel_id = target_video[0].channels_id
+      const prev_video = await db('videos')
+        .where('channels_id', target_video[0].channels_id)
+        .andWhere('sort_index', '>', target_video[0].sort_index)
+        .andWhere('status', 'processed')
+        .orderBy('sort_index', 'asc')
+        .limit(1)
+      
+      if(prev_video.length > 0) {
+        l.debug(`demoting record id# ${target_video[0].id}`)
+        await db('videos').update('sort_index', prev_video[0].sort_index).where('id', target_video[0].id)
+        await db('videos').update('sort_index', target_video[0].sort_index).where('id', prev_video[0].id)
+      }
+
+      const payload = await db('videos').where({
+        channels_id: req.session.user.current_channel,
+        status: 'processed'
+      }).orderBy('sort_index')
+      
+      return payload
+
+    } catch (e) {
+      l.error(`Unable to get sort index for channel ${channel_id}: ${e}`)
+      l.debug(e.stack)
+      throw(e)
+    }
+  }
+
 }
 
 export default new VideosService();

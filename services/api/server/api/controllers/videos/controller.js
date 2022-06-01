@@ -22,5 +22,14 @@ export class Controller {
       res.status(201).location(`/api/v1/videos/${r.id}`).json(r)
     );
   }
+
+  promote(req, res) {
+    VideosService.promoteVideo(req).then((r) => res.json(r));
+  }
+
+  demote(req, res) {
+    VideosService.demoteVideo(req).then((r) => res.json(r));
+  }
+
 }
 export default new Controller();

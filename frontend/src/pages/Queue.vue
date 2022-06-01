@@ -50,11 +50,16 @@
                 <div class="col-span-3">
                     <span v-if="video.copyright == 1" class="text-2xl font-bold text-red-600" target="_blank"><font-awesome-icon :icon="['fa', 'circle-exclamation']" size="lg"></font-awesome-icon>&nbsp;COPYRIGHT WARNING</span>
                 </div>
-                <div v-if="index == 0" class="col-span-9 text-center mt-8 space-x-4">
+                <div v-if="index == 0" class="col-span-7 text-center mt-8 space-x-4">
                     <button @click="mediaButtonClick('video:startover')" class="btn bg-sky-900"><font-awesome-icon :icon="['fa', 'backward-fast']" size="lg"></font-awesome-icon></button>
                     <button @click="mediaButtonClick('video:rewind')" class="btn bg-sky-700"><font-awesome-icon :icon="['fa', 'backward']" size="lg"></font-awesome-icon></button>
                     <button @click="mediaButtonClick('video:playpause')" class="btn bg-green-700"><font-awesome-icon :icon="['fa', 'play']" size="lg"></font-awesome-icon>/<font-awesome-icon :icon="['fa', 'pause']" size="lg"></font-awesome-icon></button>
                     <button @click="mediaButtonClick('video:fastforward')" class="btn bg-sky-700"><font-awesome-icon :icon="['fa', 'forward']" size="lg"></font-awesome-icon></button>
+                </div>
+                <div v-else class="col-span-7 text-center mt-8 space-x-4">&nbsp;</div>
+                <div class="col-span-2 text-center mt-8 space-x-4">
+                    <button v-show="!(index == 0)" @click="promote(video.id)" class="btn bg-sky-900"><font-awesome-icon :icon="['fa', 'circle-up']" size="lg"></font-awesome-icon></button>
+                    <button v-show="!(index == (videos.length - 1))" @click="demote(video.id)" class="btn bg-sky-900"><font-awesome-icon :icon="['fa', 'circle-down']" size="lg"></font-awesome-icon></button>
                     <button @click="mediaButtonClick('video:remove')" class="btn bg-red-800"><font-awesome-icon :icon="['fa', 'trash']" size="lg"></font-awesome-icon></button>
                 </div>
             </div>
@@ -64,7 +69,7 @@
 </template>
 
 <script setup>
-  import { watch, ref, onMounted } from 'vue';
+  import { watch, ref, reactive, onMounted } from 'vue';
   import { useRouter } from 'vue-router';
   import { useToast } from 'vue-toastification';
   import { apiGet, apiPost, apiDelete } from '../util/fetch'
@@ -73,9 +78,9 @@
   
   const router = useRouter();
   const toast = useToast();
-  const { socket } = useSocketIO();
 
   const user = ref(await apiGet('/users/current'));
+  const { socket } = useSocketIO(user.overlay_api_key);
   
   const channels = ref(await apiGet('/channels')); 
   var videos = ref(await apiGet('/videos'));
@@ -88,6 +93,14 @@
   watch(video_submission, (currentValue, oldValue) => {
       video_submission_valid.value = currentValue.match(/^https?:\/\/(?:www\.)?youtu(?:\.be\/.{11}|be\.com\/watch\?v=.{11})$/) ? true : false
   })
+
+  async function promote(video_id) {
+    videos.value = await apiGet(`/videos/promote/${video_id}`)
+  }
+
+  async function demote(video_id) {
+    videos.value = await apiGet(`/videos/demote/${video_id}`)
+  }
 
   function convertSecondsToTime(val) {
       const dateObj = new Date(val * 1000);
@@ -134,8 +147,13 @@
   }
 
   onMounted(() => {
-    socket.on('reload-queue', async (data) => {
-        videos = await apiGet('/videos')
+    socket.onAny((event, ...args) => {
+        console.log(`Got socket.io event ${event}`)
+    })
+
+    socket.on('queue:reload', async () => {
+        console.log('I should be refreshing the video list here')
+        videos.value = await apiGet('/videos')
     })
   })
 

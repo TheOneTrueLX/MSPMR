@@ -1,5 +1,6 @@
 import Queue from 'bull';
 import puppeteer from 'puppeteer';
+import { io } from '../../common/server'
 import db from '../../db'
 import l from '../../common/logger';
 
@@ -92,7 +93,7 @@ youtubeQueue.process(async function (job, done) {
             status: 'processed'
         }).where({ id: job.data.id })
         l.info(`[Job ${job.id}] wrapping up`)
-        done();
+        done()
     } catch (e) {
         done(e)
     }
@@ -101,6 +102,7 @@ youtubeQueue.process(async function (job, done) {
 
 youtubeQueue.on('completed', job => {
     l.info(`[youtubeQueue] job with id ${job.id} has completed`)
+    io.in(job.data.user.id).emit('queue:reload')
 })
 
 export default youtubeQueue;
