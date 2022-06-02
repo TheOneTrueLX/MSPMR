@@ -110,6 +110,7 @@ class VideosService {
     const auth = await isAuthorized(req.session.user.id, req.params.id)
     if(auth) {
       return await db('videos').where('id', req.params.id).delete('id')
+      // TODO: going to need to refund channel points here
     } else {
       return {};
     }
