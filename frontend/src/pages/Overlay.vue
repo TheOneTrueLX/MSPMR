@@ -15,7 +15,7 @@ import { useSocketIO } from '../util/socket'
 const route = useRoute();
 const { socket } = useSocketIO({ auth: { token: route.params.apikey }});
 
-const video = reactive(await apiGet(`/videos/current/${route.params.apikey}`));
+var video = reactive(await apiGet(`/videos/current/${route.params.apikey}`));
 const videoId = computed(() => {
     var regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
     var match = video.data.video_url.match(regExp);
@@ -55,6 +55,9 @@ onMounted(() => {
     youtube.value.player.seekTo(timestamp + 10, true)
   })
 
+  socket.on('overlay:reload', async () => {
+    window.location.reload();
+  })
 
 })
 </script>

@@ -97,11 +97,21 @@
   })
 
   async function promote(video_id) {
+    const old_id = videos.value[0].id
     videos.value = await apiGet(`/videos/promote/${video_id}`)
+    const new_id = videos.value[0].id
+    if(old_id != new_id) {
+        socket.emit('queue:reorder')
+    }
   }
 
   async function demote(video_id) {
+    const old_id = videos.value[0].id
     videos.value = await apiGet(`/videos/demote/${video_id}`)
+    const new_id = videos.value[0].id
+    if(old_id != new_id) {
+        socket.emit('queue:reorder')
+    }
   }
 
   function convertSecondsToTime(val) {

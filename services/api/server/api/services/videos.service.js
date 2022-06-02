@@ -18,6 +18,10 @@ export async function getCurrentVideoSortIndex(channel_id) {
   }
 }
 
+async function isAuthorized(user_id, video_id) {
+  // TODO
+}
+
 class VideosService {
   async all(req) {
     l.info(`${this.constructor.name}.all()`);
@@ -99,7 +103,7 @@ class VideosService {
       user = await db('users').where('overlay_api_key', req.params.apikey)
       if(user.length > 0) {
         channel = await db('channels').select('id').where('owner_id', user[0].id)
-        video = await db('videos').where('channels_id', channel[0].id).limit(1)
+        video = await db('videos').where('channels_id', channel[0].id).orderBy('sort_index').limit(1)
       } else {
         return {}
       }

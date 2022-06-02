@@ -65,6 +65,11 @@ export const socketConnectionHandler = (socket) => {
         l.info(`[socket ID: ${socket.id}] [user: ${socket.request.session.user.username}(${socket.request.session.user.id})] got socket.io event 'video:fastforward'`)
         socket.in(socket.request.session.user.id).emit('overlay:fastforward')
     })
+
+    socket.on('queue:reorder', () => {
+        l.info(`[socket ID: ${socket.id}] [user: ${socket.request.session.user.username}(${socket.request.session.user.id})] got socket.io event 'queue:reorder'`)
+        socket.in(socket.request.session.user.id).emit('overlay:reload')
+    })
     
 }
 
