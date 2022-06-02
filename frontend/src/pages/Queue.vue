@@ -53,7 +53,9 @@
                 <div v-if="index == 0" class="col-span-7 text-center mt-8 space-x-4">
                     <button @click="mediaButtonClick('video:startover')" class="btn bg-sky-900"><font-awesome-icon :icon="['fa', 'backward-fast']" size="lg"></font-awesome-icon></button>
                     <button @click="mediaButtonClick('video:rewind')" class="btn bg-sky-700"><font-awesome-icon :icon="['fa', 'backward']" size="lg"></font-awesome-icon></button>
-                    <button @click="mediaButtonClick('video:playpause')" class="btn bg-green-700"><font-awesome-icon :icon="['fa', 'play']" size="lg"></font-awesome-icon>/<font-awesome-icon :icon="['fa', 'pause']" size="lg"></font-awesome-icon></button>
+                    <button @click="mediaButtonClick('video:play')" class="btn bg-green-700"><font-awesome-icon :icon="['fa', 'play']" size="lg"></font-awesome-icon></button>
+                    <button @click="mediaButtonClick('video:pause')" class="btn bg-yellow-600"><font-awesome-icon :icon="['fa', 'pause']" size="lg"></font-awesome-icon></button>
+                    <button @click="mediaButtonClick('video:stop')" class="btn bg-red-700"><font-awesome-icon :icon="['fa', 'stop']" size="lg"></font-awesome-icon></button>
                     <button @click="mediaButtonClick('video:fastforward')" class="btn bg-sky-700"><font-awesome-icon :icon="['fa', 'forward']" size="lg"></font-awesome-icon></button>
                 </div>
                 <div v-else class="col-span-7 text-center mt-8 space-x-4">&nbsp;</div>
@@ -84,7 +86,7 @@
   
   const channels = ref(await apiGet('/channels')); 
   var videos = ref(await apiGet('/videos'));
-
+  
   const video_submission = ref('');
   const video_submission_valid = ref(false);
   

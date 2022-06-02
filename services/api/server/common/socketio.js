@@ -36,25 +36,36 @@ export const socketConnectionHandler = (socket) => {
         socket.to(socket.request.session.user.id).emit('echo-response', data)
     })
 
-    socket.on('video:playpause', () => {
-        l.info(`[socket ID: ${socket.id}] [user: ${socket.request.session.user.username}(${socket.request.session.user.id})] got socket.io event 'video:playpause'`)
+    socket.on('video:play', () => {
+        l.info(`[socket ID: ${socket.id}] [user: ${socket.request.session.user.username}(${socket.request.session.user.id})] got socket.io event 'video:play'`)
+        socket.in(socket.request.session.user.id).emit('overlay:play')
+    })
+
+    socket.on('video:pause', () => {
+        l.info(`[socket ID: ${socket.id}] [user: ${socket.request.session.user.username}(${socket.request.session.user.id})] got socket.io event 'video:pause'`)
+        socket.in(socket.request.session.user.id).emit('overlay:pause')
+    })
+
+    socket.on('video:stop', () => {
+        l.info(`[socket ID: ${socket.id}] [user: ${socket.request.session.user.username}(${socket.request.session.user.id})] got socket.io event 'video:stop'`)
+        socket.in(socket.request.session.user.id).emit('overlay:stop')
     })
 
     socket.on('video:startover', () => {
         l.info(`[socket ID: ${socket.id}] [user: ${socket.request.session.user.username}(${socket.request.session.user.id})] got socket.io event 'video:startover'`)
+        socket.in(socket.request.session.user.id).emit('overlay:startover')
     })
 
     socket.on('video:rewind', () => {
         l.info(`[socket ID: ${socket.id}] [user: ${socket.request.session.user.username}(${socket.request.session.user.id})] got socket.io event 'video:rewind'`)
+        socket.in(socket.request.session.user.id).emit('overlay:rewind')
     })
 
     socket.on('video:fastforward', () => {
         l.info(`[socket ID: ${socket.id}] [user: ${socket.request.session.user.username}(${socket.request.session.user.id})] got socket.io event 'video:fastforward'`)
+        socket.in(socket.request.session.user.id).emit('overlay:fastforward')
     })
-
-    socket.on('video:remove', () => {
-        l.info(`[socket ID: ${socket.id}] [user: ${socket.request.session.user.username}(${socket.request.session.user.id})] got socket.io event 'video:remove'`)
-    })  
+    
 }
 
 export const socketErrorHandler = (err) => {

@@ -2,11 +2,12 @@ import l from '../../common/logger';
 import db from '../../db';
 import youtubeQueue from '../queues/youtube.queue';
 
-async function getCurrentSortIndex(channel_id) {
+export async function getCurrentVideoSortIndex(channel_id) {
   try {
-    const index = await db('videos').max('sort_index').where({ channels_id: channel_id, status: 'processed' })
-    if(index) {
-      return index[0]++
+    const sort_index = await db('videos').max('sort_index as max_sort').where('channels_id', channel_id).andWhere('status', 'processed')
+    l.debug(sort_index)
+    if(sort_index[0].max_sort) {
+      return (sort_index[0].max_sort + 1)
     } else {
       return 1
     }
@@ -49,10 +50,9 @@ class VideosService {
       const video = await db('videos').select(['id','video_url']).where({
           channels_id: req.session.user.current_channel,
           video_url: req.body.url,
-          sort_index: getCurrentSortIndex(req.session.user.current_channel),
           status: 'pending'
         }).orderBy('created_at', 'desc').limit(1)
-      youtubeQueue.add({ id: video[0].id, url: video[0].video_url, user: req.session.user })
+      youtubeQueue.add({ id: video[0].id, channel_id: req.session.user.current_channel, url: video[0].video_url, user: req.session.user }, { attempts: 3, timeout: 60000 })
       return video[0];
     } catch (e) {
       l.error(`MSPMR DB Error: ${e}`);

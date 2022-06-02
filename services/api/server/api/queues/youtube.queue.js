@@ -1,13 +1,13 @@
 import Queue from 'bull';
 import puppeteer from 'puppeteer';
 import { io } from '../../common/server'
+import { getCurrentVideoSortIndex } from '../services/videos.service';
 import db from '../../db'
 import l from '../../common/logger';
 
 const youtubeQueue = new Queue('youtube-metadata-queue', 'redis://127.0.0.1:6379');
 
 async function scrape(url) {
-    l.debug(`Attempting to scrape metadata from ${url}...`)
     // open up the video in a "browser"
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
@@ -21,10 +21,8 @@ async function scrape(url) {
     try { 
         const titleElement = await page.waitForSelector('yt-formatted-string.ytd-video-primary-info-renderer:nth-child(1)', {timeout: 5000})
         title = await page.evaluate(el => el.innerText, titleElement)
-        l.debug(`found title ${title}`)
     } catch (e) {
         title = 'not found'
-        l.debug(`Could not find title`)
     }
 
     var duration;
@@ -34,14 +32,11 @@ async function scrape(url) {
         var a = duration_temp.split(':')
         if(a.length == 3) {
             duration = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[3]);
-            l.debug(`found duration ${duration}`)
         } else {
             duration = (+a[0]) * 60 + (+a[1]);
-            l.debug(`found duration ${duration}`)
         }
     } catch (e) {
         duration = 0
-        l.debug('could not find duration')
     }
 
     var result;
@@ -51,14 +46,11 @@ async function scrape(url) {
 
         if(copyrightText == 'Music in this video') {
             result = true;
-            l.debug(`found copyright: ${duration}`)
         } else {
             result = false;
-            l.debug(`found copyright: ${duration}`)
         }    
     } catch (e) {
         result = false;
-        l.debug(`found copyright: ${duration}`)
     }
     
     await browser.close();
@@ -69,7 +61,6 @@ async function scrape(url) {
         copyright: result
     }
     
-    l.debug(`Fetched the following from Youtube: ${JSON.stringify(payload)}`)
     return payload;
 }
 
@@ -82,27 +73,61 @@ youtubeQueue.process(async function (job, done) {
     // url = youtube video URL
 
     try {
-        l.info(`[Job ${job.id}] submitted to queue with payload ${JSON.stringify(job.data)}`)
+        job.progress(5)
         const result = await scrape(job.data.url);
-        l.info(`[Job ${job.id}] updating video record #${job.data.id}`)
-        await db('videos').update({
-            title: result.title,
-            duration: result.duration,
-            copyright: result.copyright,
-            redeem_id: job.data.redeem_id || null,
-            status: 'processed'
-        }).where({ id: job.data.id })
-        l.info(`[Job ${job.id}] wrapping up`)
-        done()
+        job.progress(70)
+        if(result.title && result.duration) {
+            const sort_index = await getCurrentVideoSortIndex(job.data.channel_id)
+            await db('videos').update({
+                title: result.title,
+                duration: result.duration,
+                copyright: result.copyright,
+                redeem_id: job.data.redeem_id || null,
+                sort_index: sort_index,
+                status: 'processed'
+            }).where({ id: job.data.id })
+        } else {
+            job.moveToFailed()
+        }
+        job.progress(100)
+        done(null, 'success')
     } catch (e) {
         done(e)
     }
 
 })
 
-youtubeQueue.on('completed', job => {
-    l.info(`[youtubeQueue] job with id ${job.id} has completed`)
+youtubeQueue.on('active', (job, jobPromise) => {
+    l.info(`[youtubeQueue] job ${job.id} has started`)
+})
+
+youtubeQueue.on('progress', (job, progress) => {
+    l.info(`[youtubeQueue] job ${job.id} is ${progress}% complete`)
+})
+
+youtubeQueue.on('completed', (job, result) => {
+    l.info(`[youtubeQueue] job ${job.id} has completed with the result ${result}`)
     io.in(job.data.user.id).emit('queue:reload')
+})
+
+youtubeQueue.on('failed', async (job) => {
+    l.error(`[youtubeQueue] job ${job.id} has failed: ${job.failedReason}`)
+    if(job.attemptsMade >= job.opts.attempts) {
+        const video = await db('videos').where('id', job.data.id)
+        if(video[0].redeem_id) {
+            // TODO: refunding channel points would happen here
+        }
+        // last step: remove unprocessed record from videos table
+        await db('videos').delete().where('id', job.data.id)
+    }
+})
+
+youtubeQueue.on('stalled', (job) => {
+    l.warn(`[youtubeQueue] job ${job.id} has stalled`)
+})
+
+youtubeQueue.on('drained', () => {
+    l.info('[youtubeQueue] no more jobs left in the queue')
 })
 
 export default youtubeQueue;
