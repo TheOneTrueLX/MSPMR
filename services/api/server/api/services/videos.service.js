@@ -19,7 +19,23 @@ export async function getCurrentVideoSortIndex(channel_id) {
 }
 
 async function isAuthorized(user_id, video_id) {
-  // TODO
+  const user = await db('users').where('id', user_id)
+  const channel = await db('channels').where('owner_id', user_id)
+  const video = await db('videos').where('id', video_id)
+
+  var isAuthorized = false
+  if(video[0].channels_id == channel[0].id) {
+    // video is in the user's own channel
+    isAuthorized = true
+  }
+
+  const moderator = await db('users_channels').where('users_id', user_id).andWhere('channels_id', video[0].channels_id)
+  if(moderator.length > 0) {
+    // video is in a channel that user moderates
+    isAuthorized = true
+  }
+
+  return isAuthorized
 }
 
 class VideosService {
@@ -89,9 +105,14 @@ class VideosService {
     }
   }
 
-  delete(req) {
-    l.info(`${this.constructor.name}.delete()`);
-    return db(videos).where('id', req.params.id).delete('id');
+  async delete(req) {
+    l.info(`${this.constructor.name}.delete()`)
+    const auth = await isAuthorized(req.session.user.id, req.params.id)
+    if(auth) {
+      return await db('videos').where('id', req.params.id).delete('id')
+    } else {
+      return {};
+    }
   }
 
   async currentVideo(req) {

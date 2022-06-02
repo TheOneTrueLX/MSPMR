@@ -51,18 +51,18 @@
                     <span v-if="video.copyright == 1" class="text-2xl font-bold text-red-600" target="_blank"><font-awesome-icon :icon="['fa', 'circle-exclamation']" size="lg"></font-awesome-icon>&nbsp;COPYRIGHT WARNING</span>
                 </div>
                 <div v-if="index == 0" class="col-span-7 text-center mt-8 space-x-4">
-                    <button @click="mediaButtonClick('video:startover')" class="btn bg-sky-900"><font-awesome-icon :icon="['fa', 'backward-fast']" size="lg"></font-awesome-icon></button>
-                    <button @click="mediaButtonClick('video:rewind')" class="btn bg-sky-700"><font-awesome-icon :icon="['fa', 'backward']" size="lg"></font-awesome-icon></button>
-                    <button @click="mediaButtonClick('video:play')" class="btn bg-green-700"><font-awesome-icon :icon="['fa', 'play']" size="lg"></font-awesome-icon></button>
-                    <button @click="mediaButtonClick('video:pause')" class="btn bg-yellow-600"><font-awesome-icon :icon="['fa', 'pause']" size="lg"></font-awesome-icon></button>
-                    <button @click="mediaButtonClick('video:stop')" class="btn bg-red-700"><font-awesome-icon :icon="['fa', 'stop']" size="lg"></font-awesome-icon></button>
-                    <button @click="mediaButtonClick('video:fastforward')" class="btn bg-sky-700"><font-awesome-icon :icon="['fa', 'forward']" size="lg"></font-awesome-icon></button>
+                    <div class="tooltip tooltip-bottom" data-tip="Skip to start"><button @click="mediaButtonClick('video:startover')" class="btn bg-sky-900"><font-awesome-icon :icon="['fa', 'backward-fast']" size="lg"></font-awesome-icon></button></div>
+                    <div class="tooltip tooltip-bottom" data-tip="Skip back 10 sec"><button @click="mediaButtonClick('video:rewind')" class="btn bg-sky-700"><font-awesome-icon :icon="['fa', 'backward']" size="lg"></font-awesome-icon></button></div>
+                    <div class="tooltip tooltip-bottom" data-tip="Play Video"><button @click="mediaButtonClick('video:play')" class="btn bg-green-700"><font-awesome-icon :icon="['fa', 'play']" size="lg"></font-awesome-icon></button></div>
+                    <div class="tooltip tooltip-bottom" data-tip="Pause Video"><button @click="mediaButtonClick('video:pause')" class="btn bg-yellow-600"><font-awesome-icon :icon="['fa', 'pause']" size="lg"></font-awesome-icon></button></div>
+                    <div class="tooltip tooltip-bottom" data-tip="Stop Playback"><button @click="mediaButtonClick('video:stop')" class="btn bg-red-700"><font-awesome-icon :icon="['fa', 'stop']" size="lg"></font-awesome-icon></button></div>
+                    <div class="tooltip tooltip-bottom" data-tip="Skip ahead 10 sec"><button @click="mediaButtonClick('video:fastforward')" class="btn bg-sky-700"><font-awesome-icon :icon="['fa', 'forward']" size="lg"></font-awesome-icon></button></div>
                 </div>
                 <div v-else class="col-span-7 text-center mt-8 space-x-4">&nbsp;</div>
                 <div class="col-span-2 text-center mt-8 space-x-4">
-                    <button v-show="!(index == 0)" @click="promote(video.id)" class="btn bg-sky-900"><font-awesome-icon :icon="['fa', 'circle-up']" size="lg"></font-awesome-icon></button>
-                    <button v-show="!(index == (videos.length - 1))" @click="demote(video.id)" class="btn bg-sky-900"><font-awesome-icon :icon="['fa', 'circle-down']" size="lg"></font-awesome-icon></button>
-                    <button @click="mediaButtonClick('video:remove')" class="btn bg-red-800"><font-awesome-icon :icon="['fa', 'trash']" size="lg"></font-awesome-icon></button>
+                    <div class="tooltip tooltip-bottom" data-tip="Move up in queue"><button v-show="!(index == 0)" @click="promote(video.id)" class="btn bg-sky-900"><font-awesome-icon :icon="['fa', 'circle-up']" size="lg"></font-awesome-icon></button></div>
+                    <div class="tooltip tooltip-bottom" data-tip="Move down in queue"><button v-show="!(index == (videos.length - 1))" @click="demote(video.id)" class="btn bg-sky-900"><font-awesome-icon :icon="['fa', 'circle-down']" size="lg"></font-awesome-icon></button></div>
+                    <div class="tooltip tooltip-bottom" data-tip="Delete from queue"><button @click="deleteVideo(index)" class="btn bg-red-800"><font-awesome-icon :icon="['fa', 'trash']" size="lg"></font-awesome-icon></button></div>
                 </div>
             </div>
         </div>
@@ -156,6 +156,16 @@
     } else {
         toast.error('MSPMR Error: Unable to change channel')
     }
+  }
+
+  async function deleteVideo(idx) {
+     const response = await apiDelete(`/videos/${videos.value[idx].id}`)
+     if(response) {
+         toast.success('Video removed from queue')
+         videos.value = await apiGet('/videos')
+     } else {
+         toast.error('MSPMR Error: could not delete video from queue')
+     }
   }
 
   onMounted(() => {
