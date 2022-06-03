@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!video == undefined">
+  <div v-if="!(video == undefined)">
     <YoutubeVue3 class="w-full h-screen"
         ref="youtube"
         :videoid="videoId"
