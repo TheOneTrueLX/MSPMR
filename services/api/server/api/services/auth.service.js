@@ -100,7 +100,7 @@ class AuthService {
       // Since knex returns an array of objects (good), we need to
       // manually reload the user record to "refresh" the user "object"
       // since there's no special magic to do it.
-      user = await db('users').select('id','username','overlay_api_key','profile_image','current_channel','created_at','updated_at').where('id', tapi_user_res.data.data[0].id);
+      user = await db('users').select('id','username','overlay_api_key','profile_image','current_channel','created_at','updated_at','beta_authorized','eula_accepted').where('id', tapi_user_res.data.data[0].id);
     } catch (e) {
       l.error(`MSPMR DB Error: ${e}`);
       l.debug(e.stack);

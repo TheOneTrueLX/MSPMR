@@ -22,7 +22,13 @@ onMounted(async () => {
     const res = await apiPost('/auth/callback', payload);
     if(!('status' in res)) {
       toast.success('Successfully logged in!');
-      router.push('/queue');
+      if(!res.beta_authorized) {
+        router.push('/auth/beta')
+      } else if(!res.eula_accepted) {
+        router.push('/auth/eula')
+      } else {
+        router.push('/queue');
+      }
     } else {
       toast.error(`MSPMR Error [AuthCallback.vue:37]: ${res.message}`);
       router.push('/');

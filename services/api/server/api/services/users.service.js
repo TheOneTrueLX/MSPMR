@@ -43,9 +43,43 @@ class UsersService {
         })
       }
     }
-    const authUser = await db('users').select('id','username','overlay_api_key','profile_image','current_channel','created_at','updated_at').where({ id: u.id });
+    const authUser = await db('users').select('id','username','overlay_api_key','profile_image','current_channel','created_at','updated_at','beta_authorized','eula_accepted').where({ id: u.id });
     return authUser[0];
+
   }
+
+  async betaAuth(req) {
+    try {
+      const betaCode = await db('beta_codes')
+      .where('users_id', req.session.user.id)
+      .andWhere('beta_key', req.body.key)
+      .andWhere('expires_at', '>=', Date.now())
+      .orderBy('expires_at', 'desc')
+      .limit(1)
+
+      if(betaCode.length == 1) {
+        // successful beta code check
+        await db('users').update('beta_authorized', true).where('id', req.session.user.id)
+        return { status: 200, message: 'beta user authorized' }
+      } else {
+        return { status: 401, message: 'unauthorized' }
+      }
+    } catch (e) {
+      return { status: 401, message: 'unauthorized' }      
+    }
+  }
+
+  async acceptEula(req) {
+    try {
+      await db('users').update('eula_accepted', true).where('id', req.session.user.id)
+      return { status: 200, message: 'EULA acknowledged' }
+    } catch (e) {
+      l.error(e)
+      l.debug(e.stack)
+      return { status: 500, message: 'Error updating EULA acknowledgement' }
+    }
+  }
+
 }
 
 export default new UsersService();
