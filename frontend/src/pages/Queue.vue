@@ -174,8 +174,11 @@
     })
 
     socket.on('queue:reload', async () => {
-        console.log('I should be refreshing the video list here')
         videos.value = await apiGet('/videos')
+        if(videos.value.length == 1) {
+            // new video added to empty queue, so refresh the overlay
+            socket.emit('queue:reorder')
+        }
     })
   })
 

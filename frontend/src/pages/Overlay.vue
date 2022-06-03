@@ -1,9 +1,18 @@
 <template>
+  <div v-if="!video == undefined">
     <YoutubeVue3 class="w-full h-screen"
         ref="youtube"
         :videoid="videoId"
         :autoplay="0"
     ></YoutubeVue3>
+  </div>
+  <div v-else>
+    <div class="form-control grid place-items-center h-screen">
+      <div class="w-full max-w-xs">
+        <p class="text-3xl">No videos in queue.</p>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
