@@ -5,7 +5,6 @@ import youtubeQueue from '../queues/youtube.queue';
 export async function getCurrentVideoSortIndex(channel_id) {
   try {
     const sort_index = await db('videos').max('sort_index as max_sort').where('channels_id', channel_id).andWhere('status', 'processed')
-    l.debug(sort_index)
     if(sort_index[0].max_sort) {
       return (sort_index[0].max_sort + 1)
     } else {
