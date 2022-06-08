@@ -26,6 +26,15 @@ services:
     networks:
       - mspmr_net
 
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    restart: always
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - mspmr_net
+
 volumes:
   mysql_data:
 
