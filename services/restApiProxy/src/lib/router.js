@@ -8,7 +8,7 @@ export default function () {
                 name: 'testService',
                 baseUri: '/test',
                 method: 'get',
-                serviceUri: 'https://localhost:3001/',
+                serviceUri: 'https://localhost:3001',
             }
         ]
     }

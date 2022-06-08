@@ -60,7 +60,12 @@ app.get('/', (req, res, next) => {
 const httpServer = http.createServer(httpOptions, app)
 
 httpServer.on('clientError', (err, socket) => {
-    logger.error(err)
+    logger.error(`${err.type}: ${err.message}`)
+    logger.debug(err.stack)
+    if (err.code === 'ECONNRESET' || !socket.writable) {
+        return
+    }
+
     socket.end('HTTP/1.1 400 Bad Request\r\n\r\n')
 })
 
