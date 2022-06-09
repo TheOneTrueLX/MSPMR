@@ -10,9 +10,12 @@ import morgan from 'morgan'
 import path from 'path'
 import fs from 'fs'
 
+// import routers here
+import authRouter from './controllers/auth.js'
+
 const httpOptions = {
-    key: fs.readFileSync('../../etc/mspmr.key'),
-    cert: fs.readFileSync('../../etc/mspmr.crt')
+    key: fs.readFileSync('../etc/mspmr.key'),
+    cert: fs.readFileSync('../etc/mspmr.crt')
 }
 
 const redisOptions = {
@@ -40,7 +43,7 @@ app.use(bodyParser.json())
 app.use(session(sessionOptions))
 
 // logger setup
-var accessLogStream = fs.createWriteStream(path.join('./logs', 'access.log'), { flags: 'a' })
+var accessLogStream = fs.createWriteStream(path.join(process.env.LOG_PATH, 'access.log'), { flags: 'a' })
 // log HTTP errors to the console
 app.use(morgan('dev', { skip: function (req, res) { return res.statusCode < 400 }}))
 // log everything to the access log
@@ -52,18 +55,17 @@ app.get('/version', (req, res, next) => {
     next()
 })
 
-// test server route
-app.get('/', (req, res, next) => {
-    res.json({ message: 'This is a test' })
-})
+// set up routers here
+app.use('/', authRouter)
 
 const httpServer = http.createServer(httpOptions, app)
 
 httpServer.on('clientError', (err, socket) => {
-    logger.error(`${err.type}: ${err.message}`)
-    logger.debug(err.stack)
     if (err.code === 'ECONNRESET' || !socket.writable) {
         return
+    } else {
+        logger.error(`${err.type}: ${err.message}`)
+        logger.debug(err.stack)   
     }
 
     socket.end('HTTP/1.1 400 Bad Request\r\n\r\n')

@@ -5,9 +5,8 @@ export default function () {
         },
         data: [
             {
-                name: 'testService',
-                baseUri: '/test',
-                method: 'get',
+                name: 'authService',
+                baseUri: '/auth',
                 serviceUri: 'https://localhost:3001',
             }
         ]

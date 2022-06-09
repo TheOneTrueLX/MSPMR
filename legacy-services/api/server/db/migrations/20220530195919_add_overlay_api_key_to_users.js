@@ -1,0 +1,24 @@
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
+ exports.up = function(knex) {
+    return knex.schema
+    .alterTable('users', function (table) {
+      table.string('overlay_api_key', 128)
+      .nullable()
+      .unique()
+      .after('email');
+    });
+  };
+  
+  /**
+   * @param { import("knex").Knex } knex
+   * @returns { Promise<void> }
+   */
+  exports.down = function(knex) {
+    return knex.schema
+    .alterTable('users', function (table) {
+      table.dropColumn('overlay_api_key');
+    })
+  };
