@@ -1,61 +1,23 @@
 import 'dotenv/config'
 import express from 'express'
 import proxy from 'express-http-proxy'
-import session from 'express-session'
-import { createClient } from 'redis'
-import connectRedis from 'connect-redis'
-import cors from 'cors'
-import * as http from 'https'
-import logger from './lib/logger.js'
-import morgan from 'morgan'
-import path from 'path'
-import fs from 'fs'
-import serviceFactory from './lib/services.js'
 import fetch from 'node-fetch'
 import { createTerminus } from '@godaddy/terminus'
+import { Agent as httpAgent } from 'https'
 
-const httpOptions = {
-    key: fs.readFileSync('../etc/mspmr.key'),
-    cert: fs.readFileSync('../etc/mspmr.crt')
-  }
+import httpServerFactory from '../../common/http.js'
+import sessionMiddlewareFactory from '../../common/session.js'
+import corsMiddlewareFactory from '../../common/cors.js'
+import { logger, httpLoggerMiddlewareFactory } from '../../common/logger.js'
 
-const corsOptions = {
-    origin: `https://${process.env.API_HOST}:${process.env.API_PORT}`,
-    methods: 'GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS',
-    optionsSuccessStatus: 204,
-    credentials: true,
-    exposedHeaders: ['set-cookie']
-}
+import serviceFactory from './lib/services.js'
 
-const redisOptions = {
-    url: process.env.REDIS_SESSION_URL
-}
-
-const RedisStore = connectRedis(session)
-
-const redisClient = createClient(redisOptions)
-redisClient.connect().catch(console.error)
-
-const sessionOptions = {
-    store: new RedisStore({ client: redisClient }),
-    secret: process.env.API_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    logErrors: true,
-    unset: 'destroy'
-}
 
 const app = express();
 
-app.use(session(sessionOptions))
-app.use(cors(corsOptions))
-
-// logger setup
-var accessLogStream = fs.createWriteStream(path.join(process.env.LOG_PATH, 'access.log'), { flags: 'a' })
-// log HTTP errors to the console
-app.use(morgan('dev', { skip: function (req, res) { return res.statusCode < 400 }}))
-// log everything to the access log
-app.use(morgan('combined', { stream: accessLogStream }))
+sessionMiddlewareFactory(app)
+corsMiddlewareFactory(app)
+httpLoggerMiddlewareFactory(app)
 
 // microservice routes will go here
 const services = serviceFactory();
@@ -84,17 +46,7 @@ app.all('*', (req, res) => {
     res.status(404).json({ status: 404, message: 'Not Found' })
 })
 
-const httpServer = http.createServer(httpOptions, app)
-
-httpServer.on('clientError', (err, socket) => {
-    if (err.code === 'ECONNRESET' || !socket.writable) {
-        return
-    } else {
-        logger.error(`${err.type}: ${err.message}`)
-        logger.debug(err.stack)   
-    }
-    socket.end('HTTP/1.1 400 Bad Request\r\n\r\n')
-})
+const httpServer = httpServerFactory(app)
 
 function onSignal() {
     logger.debug('Cleaning up before shutdown...')
@@ -111,7 +63,7 @@ async function healthCheck({ state }) {
     const status = []
     services.data.forEach((s) => {
          status.push(fetch(`${s.serviceUri}/version`, {
-             agent: new http.Agent({ rejectUnauthorized: false })
+             agent: new httpAgent({ rejectUnauthorized: false })
          }))
     })
     return Promise.all(status)
