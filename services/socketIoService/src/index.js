@@ -51,13 +51,6 @@ const httpServer = httpServerFactory(app)
 const io = new Server(httpServer, {
     cookie: {
         domain: process.env.API_HOST,
-    },
-    cors: {
-        origin: `https://${process.env.API_HOST}:${process.env.API_PORT}`,
-        methods: 'GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS',
-        optionsSuccessStatus: 204,
-        credentials: true,
-        exposedHeaders: ['set-cookie']
     }
 })
 
@@ -119,7 +112,6 @@ api.post('/:event', (req, res) => {
     // dispatch a socket.io event to the client
     io.in(req.session.user.id).emit(req.params.event, req.body.json)
 })
-
 
 httpServer.listen(process.env.API_PORT, process.env.API_HOST, () => {
     logger.info(`Server is listening at https://${process.env.API_HOST}:${process.env.API_PORT}`)
