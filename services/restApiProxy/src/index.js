@@ -22,23 +22,25 @@ httpLoggerMiddlewareFactory(app)
 // microservice routes will go here
 const services = serviceFactory();
 services.data.forEach((s) => {
-    logger.info(`Registering '${s.name}' at '${services.meta.apiPrefix}${s.baseUri}'`)
-    app.use(`${services.meta.apiPrefix}${s.baseUri}`, proxy(s.serviceUri, {
-        proxyReqOptDecorator: function(proxyReqOpts, originalReq) {
-            proxyReqOpts.rejectUnauthorized = false
-            return proxyReqOpts
-        },
-        proxyErrorHandler: function(err, res, next) {
-            switch (err && err.code) {
-                case 'ECONNRESET':
-                case 'ECONNREFUSED':
-                    return res.status(504).json({ status: 504, message: 'Bad Gateway' })
-                    break
-                default:
-                    next(err)
+    s.uriMap.forEach((u) => {
+        logger.info(`Registering '${s.name}' path '${u.baseUri}' at '${services.meta.apiPrefix}${u.baseUri}'`)
+        app.use(`${services.meta.apiPrefix}${u.baseUri}`, proxy(u.serviceUri, {
+            proxyReqOptDecorator: function(proxyReqOpts, originalReq) {
+                proxyReqOpts.rejectUnauthorized = false
+                return proxyReqOpts
+            },
+            proxyErrorHandler: function(err, res, next) {
+                switch (err && err.code) {
+                    case 'ECONNRESET':
+                    case 'ECONNREFUSED':
+                        return res.status(504).json({ status: 504, message: 'Bad Gateway' })
+                        break
+                    default:
+                        next(err)
+                }
             }
-        }
-    }))    
+        }))    
+    })
 })
 
 // catchall for 404 handling
