@@ -7,7 +7,7 @@ import httpServerFactory from '../../common/http.js '
 import { logger, httpLoggerMiddlewareFactory } from '../../common/logger.js'
 
 // import routers here
-import authRouter from './controllers/auth.js'
+import authRouter from './auth.controller.js'
 
 const app = express();
 
