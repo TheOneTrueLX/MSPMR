@@ -6,10 +6,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pm2 start ./ecosystem.config.cjs && pm2 monit"
+    "dev:startup": "pm2 start ./ecosystem.config.cjs && pm2 monit",
+    "dev:shutdown": "pm2 stop all"
   },
   "dependencies": {
     "@godaddy/terminus": "^4.10.2",
+    "amqplib": "^0.10.0",
     "axios": "^0.27.2",
     "axios-retry": "^3.2.5",
     "body-parser": "^1.20.0",
