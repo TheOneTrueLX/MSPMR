@@ -4,9 +4,10 @@ import fetch from 'node-fetch'
 import crypto from 'crypto'
 
 import db from '../../common/db'
-import { logger } from '../../common/logger.js'
+import { logger } from '../../common/logger'
 
-import { getCurrentUser, twitchOauthCallback, validateBetaCode, validateEulaAcceptance } from './auth.lib.js'
+import { getCurrentUser, twitchOauthCallback, validateBetaCode, validateEulaAcceptance } from './auth.lib'
+import { requireAuthentication } from '../../common/middleware/routeguard'
 
 const authRouter = Router()
 
@@ -19,7 +20,7 @@ const KNOWN_MODBOTS = [
 ]
 
 // returns JSON response with current user information
-authRouter.get('/', (req, res) => {
+authRouter.get('/', requireAuthentication, (req, res) => {
     getCurrentUser(req.session.user).then((user) => {
         if(user) {
             return res.status(StatusCodes.OK).json(user)
@@ -27,6 +28,8 @@ authRouter.get('/', (req, res) => {
             return res.status(StatusCodes.UNAUTHORIZED).json({ status: StatusCodes.UNAUTHORIZED, message: ReasonPhrases.UNAUTHORIZED })
         }
     }).catch((err) => {
+        logger.error(err)
+        logger.debug(err.stack)
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ status: StatusCodes.INTERNAL_SERVER_ERROR, message: ReasonPhrases.INTERNAL_SERVER_ERROR })
     })
 })
@@ -39,12 +42,14 @@ authRouter.post('/callback', (req, res) => {
         req.session.user = user;
         return res.status(StatusCodes.CREATED).json(user)
     }).catch((err) => {
+        logger.error(err)
+        logger.debug(err.stack)
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ status: StatusCodes.INTERNAL_SERVER_ERROR, message: ReasonPhrases.INTERNAL_SERVER_ERROR })
     })
 })
 
 // validate beta code and authorize user for beta program
-authRouter.patch('/beta', async (req, res) => {
+authRouter.patch('/beta', requireAuthentication, (req, res) => {
     validateBetaCode(req.session.user, req.body.key).then((valid_code) => {
         if(valid_code) {
             return res.status(StatusCodes.OK).json({ status: StatusCodes.OK, message: ReasonPhrases.OK })
@@ -52,12 +57,14 @@ authRouter.patch('/beta', async (req, res) => {
             return res.status(StatusCodes.UNAUTHORIZED).json({ status: StatusCodes.UNAUTHORIZED, message: ReasonPhrases.UNAUTHORIZED })
         }
     }).catch((err) => {
+        logger.error(err)
+        logger.debug(err.stack)
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ status: StatusCodes.INTERNAL_SERVER_ERROR, message: ReasonPhrases.INTERNAL_SERVER_ERROR })
     })
 })
 
 // validate user's acceptance of EULA
-authRouter.patch('/eula', async (req, res) => {
+authRouter.patch('/eula', requireAuthentication, (req, res) => {
     validateEulaAcceptance(req.session.user).then((is_accepted) => {
         if(valid_code) {
             return res.status(StatusCodes.OK).json({ status: StatusCodes.OK, message: ReasonPhrases.OK })
@@ -65,12 +72,14 @@ authRouter.patch('/eula', async (req, res) => {
             return res.status(StatusCodes.UNAUTHORIZED).json({ status: StatusCodes.UNAUTHORIZED, message: ReasonPhrases.UNAUTHORIZED })
         }
     }).catch((err) => {
+        logger.error(err)
+        logger.debug(err.stack)
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ status: StatusCodes.INTERNAL_SERVER_ERROR, message: ReasonPhrases.INTERNAL_SERVER_ERROR })
     })    
 })
 
 // destroys current user session
-authRouter.get('/logout', (req, res) => {
+authRouter.get('/logout', requireAuthentication, (req, res) => {
     try {
         if(req.session.user) {
             req.session.destroy()

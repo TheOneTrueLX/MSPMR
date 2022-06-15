@@ -3,9 +3,11 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import { StatusCodes, ReasonPhrases } from 'http-status-codes'
 
-import sessionMiddlewareFactory from '../../common/session.js'
-import { logger, httpLoggerMiddlewareFactory } from '../../common/logger.js'
-import httpServerFactory from '../../common/http.js'
+import sessionMiddlewareFactory from '../../common/session'
+import { logger, httpLoggerMiddlewareFactory } from '../../common/logger'
+import httpServerFactory from '../../common/http'
+
+import youtubeRouter from './youtube.controller'
 
 const app = express();
 
@@ -20,10 +22,7 @@ app.get('/version', (req, res, next) => {
     next()
 })
 
-// test server route - replace this with the actual server routes
-app.get('/', (req, res, next) => {
-    res.status(StatusCodes.NOT_IMPLEMENTED).json({ status: StatusCodes.NOT_IMPLEMENTED, message: ReasonPhrases.NOT_IMPLEMENTED })
-})
+app.use('/', youtubeRouter)
 
 const httpServer = httpServerFactory(app)
 

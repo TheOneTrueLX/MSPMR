@@ -2,12 +2,12 @@ import 'dotenv/config'
 import express from 'express'
 import bodyParser from 'body-parser'
 
-import sessionMiddlewareFactory from '../../common/session.js'
+import sessionMiddlewareFactory from '../../common/session'
 import httpServerFactory from '../../common/http.js '
-import { logger, httpLoggerMiddlewareFactory } from '../../common/logger.js'
+import { logger, httpLoggerMiddlewareFactory } from '../../common/logger'
 
 // import routers here
-import authRouter from './auth.controller.js'
+import authRouter from './auth.controller'
 
 const app = express();
 

@@ -2,7 +2,7 @@ import fetch from 'node-fetch'
 import crypto from 'crypto'
 
 import db from '../../common/db'
-import { logger } from '../../common/logger.js'
+import { logger } from '../../common/logger'
 
 export function getCurrentUser(user) {
     return new Promise(async (resolve, reject) => {

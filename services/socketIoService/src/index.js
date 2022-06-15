@@ -4,9 +4,9 @@ import bodyParser from 'body-parser'
 import { StatusCodes, ReasonPhrases } from 'http-status-codes'
 import { Server } from 'socket.io'
 
-import { sessionMiddlewareFactory, socketIoSessionMiddlewareFactory } from '../../common/session.js'
-import { logger, httpLoggerMiddlewareFactory } from '../../common/logger.js'
-import httpServerFactory from '../../common/http.js'
+import { sessionMiddlewareFactory, socketIoSessionMiddlewareFactory } from '../../common/session'
+import { logger, httpLoggerMiddlewareFactory } from '../../common/logger'
+import httpServerFactory from '../../common/http'
 import { Server } from 'https'
 
 

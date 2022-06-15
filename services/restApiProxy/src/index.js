@@ -5,12 +5,12 @@ import fetch from 'node-fetch'
 import { createTerminus } from '@godaddy/terminus'
 import { Agent as httpAgent } from 'https'
 
-import httpServerFactory from '../../common/http.js'
-import sessionMiddlewareFactory from '../../common/session.js'
-import corsMiddlewareFactory from '../../common/cors.js'
-import { logger, httpLoggerMiddlewareFactory } from '../../common/logger.js'
+import httpServerFactory from '../../common/http'
+import sessionMiddlewareFactory from '../../common/session'
+import corsMiddlewareFactory from '../../common/cors'
+import { logger, httpLoggerMiddlewareFactory } from '../../common/logger'
 
-import serviceFactory from './lib/services.js'
+import serviceFactory from './lib/services'
 
 
 const app = express();

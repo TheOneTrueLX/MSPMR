@@ -3,9 +3,9 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import { StatusCodes, ReasonPhrases } from 'http-status-codes'
 
-import sessionMiddlewareFactory from '../../common/session.js'
-import { logger, httpLoggerMiddlewareFactory } from '../../common/logger.js'
-import httpServerFactory from '../../common/http.js'
+import sessionMiddlewareFactory from '../../common/session'
+import { logger, httpLoggerMiddlewareFactory } from '../../common/logger'
+import httpServerFactory from '../../common/http'
 
 const app = express();
 
