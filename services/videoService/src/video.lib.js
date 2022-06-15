@@ -1,6 +1,7 @@
+import amqp from 'amqplib/callback_api'
+
 import logger from '../../common/logger'
 import db from '../../common/db'
-import { response } from 'express'
 
 async function isAuthorized(user_id, video_id) {
     return new Promise(async (resolve, reject) => {
@@ -64,6 +65,20 @@ export function addVideoToUserQueue(user, video) {
 
             // TODO: Figure out how to add the video to the yt postprocessor queue
             // youtubeQueue.add({ id: video[0].id, channel_id: req.session.user.current_channel, url: video[0].video_url, user: req.session.user }, { attempts: 3, timeout: 60000 })
+            amqp.connect(process.env.AMQP_SERVER_URI).then((err, conn) => {
+                return conn.createChannel().then((channel) => {
+                    var ok = channel.assertExchange('mspmr.direct', 'direct', { durable: true })
+                    return ok.then(() => {
+                        channel.publish('mspmr.direct', 'ytPostProcessorService', { video_id: new_video.id })
+                        logger.debug(`[AMQP] dispatched to ytPostProcessorService: ${ video_id: new_video.id }`)
+                        return channel.close()
+                    })
+                })
+            }).finally(() => {
+                conn.close()
+            }).catch((err) => { 
+                reject(Error('Unable to connect to event bus', { cause: err }))
+            })
 
             // In the legacy API, nothing actually read the return value
             // of this function, so we'll just return true here
