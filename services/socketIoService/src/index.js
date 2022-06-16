@@ -3,12 +3,12 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import { StatusCodes, ReasonPhrases } from 'http-status-codes'
 import { Server } from 'socket.io'
+import fs from 'fs'
+import * as url from 'url'
 
-import { sessionMiddlewareFactory, socketIoSessionMiddlewareFactory } from '../../common/session'
-import { logger, httpLoggerMiddlewareFactory } from '../../common/logger'
-import httpServerFactory from '../../common/http'
-import { Server } from 'https'
-
+import { sessionMiddlewareFactory, socketIoSessionMiddlewareFactory } from '../../common/session.js'
+import { logger, httpLoggerMiddlewareFactory } from '../../common/logger.js'
+import httpServerFactory from '../../common/http.js'
 
 export const socketAuthMiddleware = async (socket, next) => {
     if(socket.request.session && socket.request.session.user) {
@@ -29,16 +29,18 @@ export const socketAuthMiddleware = async (socket, next) => {
     }
 }
 
+const config = JSON.parse(fs.readFileSync(url.fileURLToPath(new URL('.', import.meta.url)) + '/config.json'))[process.env.NODE_ENV]
+
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 sessionMiddlewareFactory(app)
-httpLoggerMiddlewareFactory(app)
+httpLoggerMiddlewareFactory(app, config.logPath)
 
 // default route
 app.get('/version', (req, res, next) => {
-    res.json({ 'service': `${process.env.SERVICE_NAME}`, version: `${process.env.SERVICE_VERSION}` })
+    res.json({ 'service': `${config.serviceName}`, version: `${config.serviceVersion}` })
     next()
 })
 
@@ -50,7 +52,7 @@ app.get('/', (req, res, next) => {
 const httpServer = httpServerFactory(app)
 const io = new Server(httpServer, {
     cookie: {
-        domain: process.env.API_HOST,
+        domain: config.host,
     }
 })
 
@@ -107,12 +109,12 @@ io.on('error', (err) => {
     logger.debug(err.stack)
 })
 
-api.post('/:event', (req, res) => {
+app.post('/:event', (req, res) => {
     // the other microservices can make this API call to
     // dispatch a socket.io event to the client
     io.in(req.session.user.id).emit(req.params.event, req.body.json)
 })
 
-httpServer.listen(process.env.API_PORT, process.env.API_HOST, () => {
-    logger.info(`Server is listening at https://${process.env.API_HOST}:${process.env.API_PORT}`)
+httpServer.listen(config.port, config.host, () => {
+    logger.info(`Server is listening at https://${config.host}:${config.port}`)
 })

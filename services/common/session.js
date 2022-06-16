@@ -3,7 +3,7 @@ import { createClient } from 'redis'
 import connectRedis from 'connect-redis'
 
 
-export default function sessionMiddlewareFactory(app) {
+export function sessionMiddlewareFactory(app) {
     const redisOptions = {
         url: process.env.REDIS_SESSION_URL
     }

@@ -1,5 +1,5 @@
 import db from '../../common/db'
-import logger from '../../common/logger'
+import { logger } from '../../common/logger.js'
 
 // TODO: refactor as necessary
 export async function getCurrentVideoSortIndex(channel_id) {

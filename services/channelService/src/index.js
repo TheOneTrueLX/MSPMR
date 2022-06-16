@@ -2,23 +2,28 @@ import 'dotenv/config'
 import express from 'express'
 import bodyParser from 'body-parser'
 import { StatusCodes, ReasonPhrases } from 'http-status-codes'
+import fs from 'fs'
+import * as url from 'url'
 
-import sessionMiddlewareFactory from '../../common/session'
-import { logger, httpLoggerMiddlewareFactory } from '../../common/logger'
-import httpServerFactory from '../../common/http'
+import sessionMiddlewareFactory from '../../common/session.js'
+import { logger, httpLoggerMiddlewareFactory } from '../../common/logger.js'
+import httpServerFactory from '../../common/http.js'
 
-import channelRouter from './channel.controller'
+import channelRouter from './channel.controller.js'
+
+// import config
+const config = JSON.parse(fs.readFileSync(url.fileURLToPath(new URL('.', import.meta.url)) + '/config.json'))[process.env.NODE_ENV]
 
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 sessionMiddlewareFactory(app)
-httpLoggerMiddlewareFactory(app)
+httpLoggerMiddlewareFactory(app, config.logPath)
 
 // default route
 app.get('/version', (req, res, next) => {
-    res.json({ 'service': `${process.env.SERVICE_NAME}`, version: `${process.env.SERVICE_VERSION}` })
+    res.json({ 'service': `${config.serviceName}`, version: `${config.serviceVersion}` })
     next()
 })
 
@@ -27,6 +32,6 @@ app.use('/', channelRouter)
 
 const httpServer = httpServerFactory(app)
 
-httpServer.listen(process.env.API_PORT, process.env.API_HOST, () => {
-    logger.info(`Server is listening at https://${process.env.API_HOST}:${process.env.API_PORT}`)
+httpServer.listen(config.port, config.host, () => {
+    logger.info(`Server is listening at https://${config.host}:${config.port}`)
 })

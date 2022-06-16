@@ -1,11 +1,10 @@
 import e, { Router } from 'express'
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-import router from '../../../legacy-services/api/server/api/controllers/channels/router';
 
-import { getUserChannels, setCurrentChannel } from './channel.lib'
-import { requireAuthentication } from '../../common/middleware/routeguard'
+import { getUserChannels, setCurrentChannel } from './channel.lib.js'
+import { requireAuthentication } from '../../common/middleware/routeguard.js'
 
-channelRouter = new Router();
+const channelRouter = new Router();
 
 channelRouter.use(requireAuthentication)
 

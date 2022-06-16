@@ -1,6 +1,6 @@
 import dbconfig from '../../knexfile';
 import knex from 'knex';
-import l from '../common/logger'
+import { logger } from '../logger'
 
 const dblogging = {
     log: {

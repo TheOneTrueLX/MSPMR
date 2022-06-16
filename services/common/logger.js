@@ -10,8 +10,8 @@ export const logger = pino({
 });
 
 
-export function httpLoggerMiddlewareFactory(app) {
-    const accessLogStream = fs.createWriteStream(path.join(process.env.LOG_PATH, 'access.log'), { flags: 'a' })
+export function httpLoggerMiddlewareFactory(app, logpath) {
+    const accessLogStream = fs.createWriteStream(path.join(logpath, 'access.log'), { flags: 'a' })
     app.use(morgan('dev', { skip: function (req, res) { return res.statusCode < 400 }}))
     app.use(morgan('combined', { stream: accessLogStream }))
 }

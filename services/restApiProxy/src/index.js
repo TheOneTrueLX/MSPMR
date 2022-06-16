@@ -4,27 +4,30 @@ import proxy from 'express-http-proxy'
 import fetch from 'node-fetch'
 import { createTerminus } from '@godaddy/terminus'
 import { Agent as httpAgent } from 'https'
+import fs from 'fs'
+import * as url from 'url'
 
-import httpServerFactory from '../../common/http'
-import sessionMiddlewareFactory from '../../common/session'
-import corsMiddlewareFactory from '../../common/cors'
-import { logger, httpLoggerMiddlewareFactory } from '../../common/logger'
+import httpServerFactory from '../../common/http.js'
+import { sessionMiddlewareFactory } from '../../common/session.js'
+import corsMiddlewareFactory from '../../common/cors.js'
+import { logger, httpLoggerMiddlewareFactory } from '../../common/logger.js'
 
-import serviceFactory from './lib/services'
+import serviceFactory from './lib/services.js'
 
+const config = JSON.parse(fs.readFileSync(url.fileURLToPath(new URL('.', import.meta.url)) + '/config.json'))[process.env.NODE_ENV]
 
 const app = express();
 
 sessionMiddlewareFactory(app)
-corsMiddlewareFactory(app)
-httpLoggerMiddlewareFactory(app)
+corsMiddlewareFactory(app, `https://${config.port}:${config.port}`)
+httpLoggerMiddlewareFactory(app, config.logPath)
 
 // microservice routes will go here
 const services = serviceFactory();
 services.data.forEach((s) => {
     s.uriMap.forEach((u) => {
-        logger.info(`Registering '${s.name}' path '${u.baseUri}' at '${services.meta.apiPrefix}${u.baseUri}'`)
-        app.use(`${services.meta.apiPrefix}${u.baseUri}`, proxy(u.serviceUri, {
+        logger.info(`Registering '${s.name}' path '${u.baseUri}' at '${!(u.ignoreBaseUri && u.ignoreBaseUri === true) ? services.meta.apiPrefix : ''}${u.baseUri}'${!(u.ignoreBaseUri && u.ignoreBaseUri === true) ? '' : ' [API Prefix ignored per config]'}`)
+        app.use(`${!(u.ignoreBaseUri && u.ignoreBaseUri === true) ? services.meta.apiPrefix : ''}${u.baseUri}`, proxy(u.serviceUri, {
             proxyReqOptDecorator: function(proxyReqOpts, originalReq) {
                 proxyReqOpts.rejectUnauthorized = false
                 return proxyReqOpts
@@ -83,6 +86,6 @@ createTerminus(httpServer, {
     logger: console.log
 })
 
-httpServer.listen(process.env.API_PORT, process.env.API_HOST, () => {
-    logger.info(`Server is listening at https://${process.env.API_HOST}:${process.env.API_PORT}`)
+httpServer.listen(config.port, config.host, () => {
+    logger.info(`Server is listening at https://${config.host}:${config.port}`)
 })

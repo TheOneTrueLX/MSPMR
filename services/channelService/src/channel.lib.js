@@ -1,8 +1,8 @@
-import logger from '../../common/logger'
+import { logger } from '../../common/logger.js'
 import db from '../../common/db'
 
 export function getUserChannels(user) {
-    return new Promise((resolve,reject) => {
+    return new Promise(async (resolve,reject) => {
         try {
             // we need to assemble an array from two disparate tables
             // and I'd rather not do it with a union query because
@@ -38,7 +38,7 @@ export function getUserChannels(user) {
 }
 
 export function setCurrentChannel(user, channel_id) {
-    return new Promise((resolve,reject) => {
+    return new Promise(async (resolve,reject) => {
         try {
             // This method will not permit a user to change to a channel that they 
             // are not either an owner or moderator for. 

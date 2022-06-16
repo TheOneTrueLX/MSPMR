@@ -1,0 +1,10 @@
+{
+    "development": {
+        "serviceName": "videoService",
+        "serviceVersion": "1.0.0",
+        "host": "localhost",
+        "port": 3004,
+        "logPath": "./videoService/logs"
+    },
+    "production": {}
+}

@@ -4,7 +4,7 @@ import fetch from 'node-fetch'
 import crypto from 'crypto'
 
 import db from '../../common/db'
-import { logger } from '../../common/logger'
+import { logger } from '../../common/logger.js'
 
 import { getCurrentUser, twitchOauthCallback, validateBetaCode, validateEulaAcceptance } from './auth.lib'
 import { requireAuthentication } from '../../common/middleware/routeguard'

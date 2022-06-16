@@ -1,10 +1,9 @@
 import { Router } from 'express'
 import { StatusCodes, ReasonPhrases } from 'http-status-codes'
-import router from '../../../legacy-services/api/server/api/controllers/auth/router'
 
 import { getAllUserVideos, addVideoToUserQueue, deleteVideo, getVideosByUserId, getCurrentVideoFromQueue, promoteVideo, demoteVideo } from './video.lib'
-import { requireAuthentication } from '../../common/middleware/routeguard'
-import { logger } from '../../common/logger'
+import { requireAuthentication } from '../../common/middleware/routeguard.js'
+import { logger } from '../../common/logger.js'
 
 const videoRouter = new Router()
 

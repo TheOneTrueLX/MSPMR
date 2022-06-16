@@ -1,10 +1,13 @@
-require('dotenv').config();
-const path = require('path');
+import 'dotenv/config'
+import path from 'path'
+import * as url from 'url'
+
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
 
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
-module.exports = {
+export default {
   client: 'mysql2',
   connection: {
     host: '127.0.0.1',

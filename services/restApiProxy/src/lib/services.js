@@ -11,6 +11,7 @@ export default function () {
                     {
                         baseUri: <proxy_endpoint_uri>,
                         serviceUri: <url_to_service_endpoint>,
+                        ignoreBaseUri: <true|false> // optional: prevents apiPrefix from being prepended to URI
                     },
                 ]
             }
@@ -25,7 +26,8 @@ export default function () {
                     },
                     {
                         baseUri: '/socket.io',
-                        serviceUri: 'https://localhost:3001/socket.io'
+                        serviceUri: 'https://localhost:3001/socket.io',
+                        ignoreBaseUri: true
                     }
                 ],
             },

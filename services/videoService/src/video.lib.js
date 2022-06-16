@@ -1,6 +1,6 @@
 import amqp from 'amqplib/callback_api'
 
-import logger from '../../common/logger'
+import { logger } from '../../common/logger.js'
 import db from '../../common/db'
 
 async function isAuthorized(user_id, video_id) {
@@ -70,7 +70,7 @@ export function addVideoToUserQueue(user, video) {
                     var ok = channel.assertExchange('mspmr.direct', 'direct', { durable: true })
                     return ok.then(() => {
                         channel.publish('mspmr.direct', 'ytPostProcessorService', { video_id: new_video.id })
-                        logger.debug(`[AMQP] dispatched to ytPostProcessorService: ${ video_id: new_video.id }`)
+                        logger.debug(`[AMQP] dispatched to ytPostProcessorService: { video_id: ${new_video.id} }`)
                         return channel.close()
                     })
                 })
@@ -93,7 +93,7 @@ export function addVideoToUserQueue(user, video) {
 export function deleteVideo(user, id) {
     return new Promise(async (resolve, reject) => {    
         try {
-            isAuthorized(user.id, id).then((response) => {
+            isAuthorized(user.id, id).then(async (response) => {
                 if(response) {
                     // the user is authorized to delete this video
                     await db('videos').where('id', req.params.id).delete('id')

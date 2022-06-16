@@ -1,8 +1,8 @@
 import Queue from 'bull';
 import puppeteer from 'puppeteer';
-import { getCurrentVideoSortIndex } from './util';
+import { getCurrentVideoSortIndex } from './util.js';
 import db from '../../common/db'
-import logger from '../../common/logger';
+import { logger } from '../../common/logger.js';
 
 const youtubeQueue = new Queue('youtube-metadata-queue', 'redis://127.0.0.1:6379');
 

@@ -3,8 +3,8 @@ import { google } from 'googleapis'
 import moment from 'moment'
 
 import db from '../../common/db'
-import { logger } from '../../common/logger'
-import youtubeQueue from './youtube.queue'
+import { logger } from '../../common/logger.js'
+import youtubeQueue from './youtube.queue.js'
 
 const youtube = google.youtube('v3')
 

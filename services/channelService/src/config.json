@@ -1,0 +1,10 @@
+{
+    "development": {
+        "serviceName": "channelService",
+        "serviceVersion": "1.0.0",
+        "host": "localhost",
+        "port": 3003,
+        "logPath": "./channelService/logs"
+    },
+    "production": {}
+}
