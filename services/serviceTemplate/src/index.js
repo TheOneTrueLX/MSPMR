@@ -29,6 +29,11 @@ app.get('/', (req, res, next) => {
     res.status(StatusCodes.NOT_IMPLEMENTED).json({ status: StatusCodes.NOT_IMPLEMENTED, message: ReasonPhrases.NOT_IMPLEMENTED })
 })
 
+// catchall for 404 handling
+app.all('*', (req, res) => {
+    res.status(404).json({ status: 404, message: 'Not Found' }).end()
+})
+
 const httpServer = httpServerFactory(app)
 
 httpServer.listen(config.port, config.host, () => {

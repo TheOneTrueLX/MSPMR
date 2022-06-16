@@ -39,14 +39,8 @@ sessionMiddlewareFactory(app)
 httpLoggerMiddlewareFactory(app, config.logPath)
 
 // default route
-app.get('/version', (req, res, next) => {
-    res.json({ 'service': `${config.serviceName}`, version: `${config.serviceVersion}` })
-    next()
-})
-
-// test server route - replace this with the actual server routes
-app.get('/', (req, res, next) => {
-    res.status(StatusCodes.NOT_IMPLEMENTED).json({ status: StatusCodes.NOT_IMPLEMENTED, message: ReasonPhrases.NOT_IMPLEMENTED })
+app.get('/internal/version', (req, res) => {
+    res.json({ 'service': `${config.serviceName}`, version: `${config.serviceVersion}` }).end()
 })
 
 const httpServer = httpServerFactory(app)
@@ -114,6 +108,12 @@ app.post('/:event', (req, res) => {
     // dispatch a socket.io event to the client
     io.in(req.session.user.id).emit(req.params.event, req.body.json)
 })
+
+// catchall for 404 handling
+app.all('*', (req, res) => {
+    res.status(404).json({ status: 404, message: 'Not Found' }).end()
+})
+
 
 httpServer.listen(config.port, config.host, () => {
     logger.info(`Server is listening at https://${config.host}:${config.port}`)

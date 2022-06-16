@@ -21,13 +21,17 @@ sessionMiddlewareFactory(app)
 httpLoggerMiddlewareFactory(app, config.logPath)
 
 // default route
-app.get('/version', (req, res, next) => {
-    res.json({ 'service': `${config.serviceName}`, version: `${config.serviceVersion}` })
-    next()
+app.get('/internal/version', (req, res) => {
+    res.json({ 'service': `${config.serviceName}`, version: `${config.serviceVersion}` }).end()
 })
 
 // test server route - replace this with the actual server routes
 app.use('/', videoRouter)
+
+// catchall for 404 handling
+app.all('*', (req, res) => {
+    res.status(404).json({ status: 404, message: 'Not Found' }).end()
+})
 
 const httpServer = httpServerFactory(app)
 

@@ -4,7 +4,7 @@ import bodyParser from 'body-parser'
 import fs from 'fs'
 import * as url from 'url'
 
-import sessionMiddlewareFactory from '../../common/session.js'
+import { sessionMiddlewareFactory } from '../../common/session.js'
 import httpServerFactory from '../../common/http.js '
 import { logger, httpLoggerMiddlewareFactory } from '../../common/logger.js'
 
@@ -21,8 +21,18 @@ app.use(bodyParser.json())
 sessionMiddlewareFactory(app)
 httpLoggerMiddlewareFactory(app, config.logPath)
 
+// default route
+app.get('/internal/version', (req, res) => {
+    res.json({ 'service': `${config.serviceName}`, version: `${config.serviceVersion}` }).end()
+})
+
 // set up routers here
 app.use('/', authRouter)
+
+// catchall for 404 handling
+app.all('*', (req, res) => {
+    res.status(404).json({ status: 404, message: 'Not Found' }).end()
+})
 
 const httpServer = httpServerFactory(app)
 

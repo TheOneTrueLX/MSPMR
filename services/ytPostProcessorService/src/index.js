@@ -35,12 +35,16 @@ amqp.connect(process.env.AMQP_SERVER_URI, (err, conn) => {
 })
 
 // default route
-app.get('/version', (req, res, next) => {
-    res.json({ 'service': `${config.serviceName}`, version: `${config.serviceVersion}` })
-    next()
+app.get('/internal/version', (req, res) => {
+    res.json({ 'service': `${config.serviceName}`, version: `${config.serviceVersion}` }).end()
 })
 
 app.use('/', youtubeRouter)
+
+// catchall for 404 handling
+app.all('*', (req, res) => {
+    res.status(404).json({ status: 404, message: 'Not Found' }).end()
+})
 
 const httpServer = httpServerFactory(app)
 

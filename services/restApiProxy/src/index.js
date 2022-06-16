@@ -13,6 +13,7 @@ import corsMiddlewareFactory from '../../common/cors.js'
 import { logger, httpLoggerMiddlewareFactory } from '../../common/logger.js'
 
 import serviceFactory from './lib/services.js'
+import e from 'express'
 
 const config = JSON.parse(fs.readFileSync(url.fileURLToPath(new URL('.', import.meta.url)) + '/config.json'))[process.env.NODE_ENV]
 
@@ -21,6 +22,11 @@ const app = express();
 sessionMiddlewareFactory(app)
 corsMiddlewareFactory(app, `https://${config.port}:${config.port}`)
 httpLoggerMiddlewareFactory(app, config.logPath)
+
+// default route
+app.get('/internal/version', (req, res) => {
+    res.json({ 'service': `${config.serviceName}`, version: `${config.serviceVersion}` }).end()
+})
 
 // microservice routes will go here
 const services = serviceFactory();
@@ -66,10 +72,24 @@ function onShutdown() {
 
 async function healthCheck({ state }) {
     const status = []
+    status.push(fetch(`https://${config.host}:${config.port}/internal/version`, { agent: new httpAgent({ rejectUnauthorized: false }) }).then((r) => { return r.json() }))
     services.data.forEach((s) => {
-         status.push(fetch(`${s.serviceUri}/version`, {
-             agent: new httpAgent({ rejectUnauthorized: false })
-         }))
+        s.uriMap.forEach((u) => {
+            const regexp = /https\:\/\/.*\:[0-9]{4}\/.*/
+            if(!regexp.test(u.serviceUri)) {
+                status.push(fetch(`${u.serviceUri}/internal/version`, { agent: new httpAgent({ rejectUnauthorized: false }) })
+                    .then((r) => { 
+                        if(!r.ok) {
+                            return { serviceUri: u.serviceUri, status: r.status, message: r.statusText }
+                        } else {
+                            return r.json() 
+                        }
+                    }).catch((e) => { 
+                        return { serviceUri: u.serviceUri, }
+                    })
+                )
+            }
+        })
     })
     return Promise.all(status)
 }
@@ -77,6 +97,7 @@ async function healthCheck({ state }) {
 createTerminus(httpServer, {
     healthChecks: {
         '/': healthCheck,
+        verbatim: true,
     }, 
     statusOk: 200,
     statusError: 503,
