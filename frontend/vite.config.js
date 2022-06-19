@@ -8,6 +8,8 @@ import fs from 'fs'
 // https://vitejs.dev/config/
 export default defineConfig({
   server: {
+    host: 'localhost',
+    port: 5000,
     https: {
       key: fs.readFileSync('../etc/mspmr.key'),
       cert: fs.readFileSync('../etc/mspmr.crt')
