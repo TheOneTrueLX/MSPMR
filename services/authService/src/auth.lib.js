@@ -1,7 +1,7 @@
 import fetch from 'node-fetch'
 import crypto from 'crypto'
 
-import db from '../../common/db'
+import db from '../../common/db/index.js'
 import { logger } from '../../common/logger.js'
 
 export function getCurrentUser(user) {

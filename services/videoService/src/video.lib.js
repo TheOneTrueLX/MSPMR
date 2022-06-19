@@ -1,7 +1,7 @@
-import amqp from 'amqplib/callback_api'
+import amqp from 'amqplib/callback_api.js'
 
 import { logger } from '../../common/logger.js'
-import db from '../../common/db'
+import db from '../../common/db/index.js'
 
 async function isAuthorized(user_id, video_id) {
     return new Promise(async (resolve, reject) => {

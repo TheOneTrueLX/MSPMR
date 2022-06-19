@@ -1,0 +1,8 @@
+ {
+   "watch": [
+      "./restApiProxy/src/*.*",
+      "knexfile.json",
+      ".env"
+   ],
+    "ext": "js,json,mjs,yaml,yml"
+ }

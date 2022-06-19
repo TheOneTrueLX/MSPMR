@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import express from 'express'
 import bodyParser from 'body-parser'
-import amqp from 'amqplib/callback_api'
+import amqp from 'amqplib/callback_api.js'
 import { StatusCodes, ReasonPhrases } from 'http-status-codes'
 import fs from 'fs'
 import * as url from 'url'

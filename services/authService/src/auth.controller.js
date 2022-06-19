@@ -3,11 +3,11 @@ import { StatusCodes, ReasonPhrases } from 'http-status-codes'
 import fetch from 'node-fetch'
 import crypto from 'crypto'
 
-import db from '../../common/db'
+import db from '../../common/db/index.js'
 import { logger } from '../../common/logger.js'
 
-import { getCurrentUser, twitchOauthCallback, validateBetaCode, validateEulaAcceptance } from './auth.lib'
-import { requireAuthentication } from '../../common/middleware/routeguard'
+import { getCurrentUser, twitchOauthCallback, validateBetaCode, validateEulaAcceptance } from './auth.lib.js'
+import { requireAuthentication } from '../../common/middleware/routeguard.js'
 
 const authRouter = Router()
 

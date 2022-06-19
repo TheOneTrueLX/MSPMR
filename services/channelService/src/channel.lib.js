@@ -1,5 +1,5 @@
 import { logger } from '../../common/logger.js'
-import db from '../../common/db'
+import db from '../../common/db/index.js'
 
 export function getUserChannels(user) {
     return new Promise(async (resolve,reject) => {

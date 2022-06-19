@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { google } from 'googleapis'
 import moment from 'moment'
 
-import db from '../../common/db'
+import db from '../../common/db/index.js'
 import { logger } from '../../common/logger.js'
 import youtubeQueue from './youtube.queue.js'
 

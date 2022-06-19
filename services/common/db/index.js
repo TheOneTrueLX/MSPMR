@@ -1,20 +1,20 @@
-import dbconfig from '../../knexfile';
+import dbconfig from '../../knexfile.js';
 import knex from 'knex';
-import { logger } from '../logger'
+import { logger } from '../logger.js'
 
 const dblogging = {
     log: {
         warn(message) {
-            l.warn(message);
+            logger.warn(message);
         },
         error(message) {
-            l.error(message);
+            logger.error(message);
         },
         deprecate(message) {
-            l.warn(message);
+            logger.warn(message);
         },
         debug(message) {
-            l.debug(message);
+            logger.debug(message);
         }
     }
 }

@@ -8,12 +8,12 @@
   "scripts": {
     "dev:startup": "pm2 start ./ecosystem.config.cjs && pm2 monit",
     "dev:shutdown": "pm2 stop all",
-    "dev:restApiProxy": "nodemon --experimental-modules --es-module-specifier-resolution=node ./restApiProxy/src/index --exec babel-node --config .nodemonrc.json | pino-pretty",
-    "dev:socketIoService": "nodemon --experimental-modules --es-module-specifier-resolution=node ./socketIoService/src/index --exec babel-node --config .nodemonrc.json | pino-pretty",
-    "dev:authService": "nodemon --experimental-modules --es-module-specifier-resolution=node ./authService/src/index --exec babel-node --config .nodemonrc.json | pino-pretty",
-    "dev:channelService": "nodemon --experimental-modules --es-module-specifier-resolution=node ./channelService/src/index --exec babel-node --config .nodemonrc.json | pino-pretty",
-    "dev:videoService": "nodemon --experimental-modules --es-module-specifier-resolution=node ./videoService/src/index --exec babel-node --config .nodemonrc.json | pino-pretty",
-    "dev:ytPostProcessorService": "nodemon --experimental-modules --es-module-specifier-resolution=node ./ytPostProcessorService/src/index --exec babel-node --config .nodemonrc.json | pino-pretty"
+    "dev:restApiProxy": "nodemon --experimental-modules --es-module-specifier-resolution=node ./restApiProxy/src/index --exec babel-node --config ./restApiProxy/.nodemonrc.json | pino-pretty",
+    "dev:socketIoService": "nodemon --experimental-modules --es-module-specifier-resolution=node ./socketIoService/src/index --exec babel-node --config ./socketIoService/.nodemonrc.json | pino-pretty",
+    "dev:authService": "nodemon --experimental-modules --es-module-specifier-resolution=node ./authService/src/index --exec babel-node --config ./authService/.nodemonrc.json | pino-pretty",
+    "dev:channelService": "nodemon --experimental-modules --es-module-specifier-resolution=node ./channelService/src/index --exec babel-node --config ./channelService/.nodemonrc.json | pino-pretty",
+    "dev:videoService": "nodemon --experimental-modules --es-module-specifier-resolution=node ./videoService/src/index --exec babel-node --config ./videoService/.nodemonrc.json | pino-pretty",
+    "dev:ytPostProcessorService": "nodemon --experimental-modules --es-module-specifier-resolution=node ./ytPostProcessorService/src/index --exec babel-node --config ./ytPostProcessorService/.nodemonrc.json | pino-pretty"
   },
   "dependencies": {
     "@godaddy/terminus": "^4.10.2",

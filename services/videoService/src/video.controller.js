@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { StatusCodes, ReasonPhrases } from 'http-status-codes'
 
-import { getAllUserVideos, addVideoToUserQueue, deleteVideo, getVideosByUserId, getCurrentVideoFromQueue, promoteVideo, demoteVideo } from './video.lib'
+import { getAllUserVideos, addVideoToUserQueue, deleteVideo, getVideosByUserId, getCurrentVideoFromQueue, promoteVideo, demoteVideo } from './video.lib.js'
 import { requireAuthentication } from '../../common/middleware/routeguard.js'
 import { logger } from '../../common/logger.js'
 

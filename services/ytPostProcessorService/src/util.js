@@ -1,4 +1,4 @@
-import db from '../../common/db'
+import db from '../../common/db/index.js'
 import { logger } from '../../common/logger.js'
 
 // TODO: refactor as necessary

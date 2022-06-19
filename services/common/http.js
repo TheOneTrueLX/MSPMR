@@ -1,5 +1,5 @@
 import * as http from 'https'
-import { logger } from './logger'
+import { logger } from './logger.js'
 import fs from 'fs'
 
 function httpServerFactory(app) {
