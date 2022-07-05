@@ -1,8 +1,0 @@
- {
-   "watch": [
-      "./ytPostProcessorService/src/*.*",
-      "knexfile.json",
-      ".env"
-   ],
-    "ext": "js,json,mjs,yaml,yml"
- }
